@@ -21,16 +21,41 @@ export function HomeHero() {
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-      tl.from("[data-hero='label']", { opacity: 0, y: 20, duration: 0.6 })
-        .from(
+      tl.fromTo(
+        "[data-hero='label']",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.6 }
+      )
+        .fromTo(
           "[data-hero='line']",
-          { opacity: 0, y: 48, rotateX: 12, stagger: 0.08, duration: 0.85 },
+          { opacity: 0, y: 48, rotateX: 12 },
+          { opacity: 1, y: 0, rotateX: 0, stagger: 0.08, duration: 0.85 },
           "-=0.35"
         )
-        .from("[data-hero='subtitle']", { opacity: 0, y: 24, duration: 0.65 }, "-=0.45")
-        .from("[data-hero='cta']", { opacity: 0, y: 20, stagger: 0.1, duration: 0.5 }, "-=0.35")
-        .from("[data-hero='image']", { opacity: 0, scale: 0.92, duration: 1 }, "-=0.7")
-        .from("[data-hero='stat']", { opacity: 0, y: 16, stagger: 0.08, duration: 0.45 }, "-=0.5");
+        .fromTo(
+          "[data-hero='subtitle']",
+          { opacity: 0, y: 24 },
+          { opacity: 1, y: 0, duration: 0.65 },
+          "-=0.45"
+        )
+        .fromTo(
+          "[data-hero='cta']",
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, stagger: 0.1, duration: 0.5 },
+          "-=0.35"
+        )
+        .fromTo(
+          "[data-hero='image']",
+          { opacity: 0, scale: 0.92 },
+          { opacity: 1, scale: 1, duration: 1 },
+          "-=0.7"
+        )
+        .fromTo(
+          "[data-hero='stat']",
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, stagger: 0.08, duration: 0.45 },
+          "-=0.5"
+        );
 
       if (imageRef.current) {
         gsap.to(imageRef.current, {
@@ -45,6 +70,8 @@ export function HomeHero() {
         });
       }
     }, rootRef);
+
+    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => ctx.revert();
   }, []);
@@ -106,12 +133,11 @@ export function HomeHero() {
           </dl>
         </div>
 
-        <div
-          ref={imageRef}
-          data-hero="image"
-          className="relative animate-float lg:justify-self-end"
-        >
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl shadow-primary/15 ring-1 ring-border/40">
+        <div data-hero="image" className="relative w-full lg:ml-auto">
+          <div
+            ref={imageRef}
+            className="relative aspect-[4/3] animate-float overflow-hidden rounded-2xl shadow-2xl shadow-primary/15 ring-1 ring-border/40"
+          >
             <Image
               src="/wallace-office.webp"
               alt="Rhode River Marina office and waterfront"

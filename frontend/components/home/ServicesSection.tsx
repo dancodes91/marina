@@ -49,22 +49,42 @@ export function ServicesSection() {
     if (reduced || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      gsap.from("[data-service-head]", {
-        scrollTrigger: { trigger: sectionRef.current, start: "top 78%" },
-        opacity: 0,
-        y: 32,
-        duration: 0.7,
-        ease: "power3.out",
-      });
-      gsap.from("[data-service-card]", {
-        scrollTrigger: { trigger: sectionRef.current, start: "top 72%" },
-        opacity: 0,
-        y: 48,
-        stagger: 0.14,
-        duration: 0.75,
-        ease: "power3.out",
-      });
+      gsap.fromTo(
+        "[data-service-head]",
+        { opacity: 0, y: 32 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power3.out",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
+      gsap.fromTo(
+        "[data-service-card]",
+        { opacity: 0, y: 48 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.14,
+          duration: 0.75,
+          ease: "power3.out",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 80%",
+            once: true,
+          },
+        }
+      );
     }, sectionRef);
+
+    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => ctx.revert();
   }, []);

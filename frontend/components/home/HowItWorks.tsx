@@ -42,15 +42,26 @@ export function HowItWorks() {
     if (reduced || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      gsap.from("[data-step]", {
-        scrollTrigger: { trigger: sectionRef.current, start: "top 68%" },
-        opacity: 0,
-        y: 40,
-        stagger: 0.12,
-        duration: 0.65,
-        ease: "power3.out",
-      });
+      gsap.fromTo(
+        "[data-step]",
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.12,
+          duration: 0.65,
+          ease: "power3.out",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top 85%",
+            once: true,
+          },
+        }
+      );
     }, sectionRef);
+
+    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => ctx.revert();
   }, []);

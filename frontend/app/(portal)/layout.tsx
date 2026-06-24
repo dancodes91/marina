@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { LogOut } from "lucide-react";
 
 import { SiteHeader, type NavItem } from "@/components/layout/SiteHeader";
-import { WaveDivider } from "@/components/layout/WaveDivider";
 import { clearTokens, getAccessToken, isStaffToken } from "@/lib/auth";
 
 const NAV: NavItem[] = [
@@ -64,7 +63,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           </button>
         </div>
       </div>
-      <WaveDivider variant="sand" />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
     </div>
   );

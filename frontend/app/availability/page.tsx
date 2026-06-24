@@ -6,7 +6,6 @@ import Link from "next/link";
 import { SlipGrid } from "@/components/availability/SlipGrid";
 import { StorageList } from "@/components/availability/StorageList";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { WaveDivider } from "@/components/layout/WaveDivider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api";
@@ -42,7 +41,6 @@ export default function AvailabilityPage() {
         ]}
         cta={{ href: "/reservations/new", label: "Request reservation →" }}
       />
-      <WaveDivider variant="sand" />
 
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mb-10 max-w-2xl">

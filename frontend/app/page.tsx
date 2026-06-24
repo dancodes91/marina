@@ -5,7 +5,6 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { MarqueeBand } from "@/components/layout/MarqueeBand";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { WaveDivider } from "@/components/layout/WaveDivider";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
@@ -27,8 +26,6 @@ export default function HomePage() {
       <MarqueeBand />
 
       <ServicesSection />
-
-      <WaveDivider variant="navy" />
 
       <HowItWorks />
 

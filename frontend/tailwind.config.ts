@@ -79,10 +79,6 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "wave-drift": {
-          "0%, 100%": { transform: "translateX(0)" },
-          "50%": { transform: "translateX(-2%)" },
-        },
         marquee: {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
@@ -95,7 +91,6 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "wave-drift": "wave-drift 8s ease-in-out infinite",
         marquee: "marquee 28s linear infinite",
         float: "float 5s ease-in-out infinite",
       },
