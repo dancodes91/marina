@@ -16,6 +16,7 @@ def create_access_token(
     subject_id: uuid.UUID,
     subject_type: str,
     role: str | None = None,
+    email: str | None = None,
 ) -> str:
     settings = get_settings()
     now = datetime.now(timezone.utc)
@@ -27,6 +28,8 @@ def create_access_token(
         "exp": now + timedelta(minutes=settings.access_token_expire_minutes),
         "type": "access",
     }
+    if email:
+        payload["email"] = email.strip().lower()
     return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 

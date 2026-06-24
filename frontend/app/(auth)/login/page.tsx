@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
 import { decodeJwtPayload, setTokens } from "@/lib/auth";
+import { notifyAuthChanged } from "@/hooks/use-auth-session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,7 +29,8 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
         token: null,
       });
-      setTokens(data.access_token, data.refresh_token);
+      setTokens(data.access_token, data.refresh_token, email);
+      notifyAuthChanged();
       const p = decodeJwtPayload(data.access_token);
       if (p?.typ === "staff") {
         router.replace("/manager/requests");

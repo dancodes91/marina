@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { SlipGrid } from "@/components/availability/SlipGrid";
 import { StorageList } from "@/components/availability/StorageList";
-import { SiteHeader } from "@/components/layout/SiteHeader";
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api";
@@ -32,14 +32,10 @@ export default function AvailabilityPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SiteHeader
+      <MarketingHeader
         title="Slips & Storage"
         subtitle="Rhode River Marina"
-        items={[
-          { href: "/", label: "Home" },
-          { href: "/login", label: "Sign in" },
-        ]}
-        cta={{ href: "/reservations/new", label: "Request reservation →" }}
+        guestCta={{ href: "/reservations/new", label: "Request reservation →" }}
       />
 
       <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

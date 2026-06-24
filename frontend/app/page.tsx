@@ -4,22 +4,13 @@ import { HomeHero } from "@/components/home/HomeHero";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { MarqueeBand } from "@/components/layout/MarqueeBand";
-import { SiteHeader } from "@/components/layout/SiteHeader";
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
-      <SiteHeader
-        title="Rhode River Marina"
-        subtitle="Service & storage on the Rhode River"
-        items={[
-          { href: "/availability", label: "Availability" },
-          { href: "/login", label: "Sign in" },
-          { href: "/claim", label: "Claim account" },
-        ]}
-        cta={{ href: "/requests/new?form_type=GENERAL", label: "Start work order →" }}
-      />
+      <MarketingHeader />
 
       <HomeHero />
 

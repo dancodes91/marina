@@ -2,10 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Anchor, Menu } from "lucide-react";
+import { Anchor, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import type { AuthSession } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export type NavItem = { href: string; label: string };
@@ -16,6 +27,8 @@ interface SiteHeaderProps {
   items?: NavItem[];
   cta?: { href: string; label: string };
   variant?: "light" | "dark";
+  session?: AuthSession | null;
+  onSignOut?: () => void;
 }
 
 const DEFAULT_NAV: NavItem[] = [
@@ -38,7 +51,7 @@ function NavLinks({
     <>
       {items.map((item) => {
         const active =
-          pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+          pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href.split("?")[0]));
         return (
           <Link
             key={item.href}
@@ -69,6 +82,8 @@ export function SiteHeader({
   items = DEFAULT_NAV,
   cta = { href: "/requests/new?form_type=GENERAL", label: "Start work order →" },
   variant = "light",
+  session = null,
+  onSignOut,
 }: SiteHeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -112,15 +127,46 @@ export function SiteHeader({
 
         <nav className="hidden items-center gap-8 md:flex">
           <NavLinks items={items} pathname={pathname} dark={dark} />
-          <Link
-            href={cta.href}
-            className={cn(
-              "text-sm font-semibold transition-colors",
-              dark ? "text-marina-teal hover:text-white" : "text-accent hover:text-primary"
-            )}
-          >
-            {cta.label}
-          </Link>
+          {cta && (
+            <Link
+              href={cta.href}
+              className={cn(
+                "text-sm font-semibold transition-colors",
+                dark ? "text-marina-teal hover:text-white" : "text-accent hover:text-primary"
+              )}
+            >
+              {cta.label}
+            </Link>
+          )}
+          {session && onSignOut && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-9 gap-2 px-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="text-xs">{session.initials}</AvatarFallback>
+                  </Avatar>
+                  <span className="hidden max-w-[140px] truncate text-sm font-medium lg:inline">
+                    {session.email ?? session.displayName}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{session.displayName}</p>
+                    {session.email && (
+                      <p className="text-xs leading-none text-muted-foreground">{session.email}</p>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onSignOut} className="text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </nav>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -142,13 +188,28 @@ export function SiteHeader({
             </SheetHeader>
             <nav className="mt-8 flex flex-col gap-6">
               <NavLinks items={items} pathname={pathname} onNavigate={() => setOpen(false)} />
-              <Link
-                href={cta.href}
-                onClick={() => setOpen(false)}
-                className="text-sm font-semibold text-accent"
-              >
-                {cta.label}
-              </Link>
+              {cta && (
+                <Link
+                  href={cta.href}
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-semibold text-accent"
+                >
+                  {cta.label}
+                </Link>
+              )}
+              {session && onSignOut && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    onSignOut();
+                  }}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out ({session.initials})
+                </button>
+              )}
             </nav>
           </SheetContent>
         </Sheet>

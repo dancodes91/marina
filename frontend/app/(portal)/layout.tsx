@@ -1,24 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
 
-import { SiteHeader, type NavItem } from "@/components/layout/SiteHeader";
+import { CustomerSidebar } from "@/components/layout/customer-sidebar";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import { notifyAuthChanged } from "@/hooks/use-auth-session";
+import { SidebarProvider } from "@/hooks/use-sidebar";
 import { clearTokens, getAccessToken, isStaffToken } from "@/lib/auth";
-
-const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/requests/new", label: "New request" },
-  { href: "/reservations/new", label: "Reservation" },
-  { href: "/availability", label: "Availability" },
-  { href: "/profile", label: "Profile" },
-];
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -32,6 +24,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   function logout() {
     clearTokens();
+    notifyAuthChanged();
     router.replace("/login");
   }
 
@@ -44,26 +37,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader
-        title="Customer Portal"
-        subtitle="Rhode River Marina"
-        items={NAV}
-        cta={{ href: "/requests/new?form_type=GENERAL", label: "New request →" }}
-      />
-      <div className="border-b border-border/40 bg-muted/30 px-4 py-2 sm:px-6">
-        <div className="mx-auto flex max-w-6xl justify-end">
-          <button
-            type="button"
-            onClick={logout}
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </button>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <CustomerSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <DashboardHeader variant="customer" onSignOut={logout} />
+          <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
         </div>
       </div>
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
-    </div>
+    </SidebarProvider>
   );
 }

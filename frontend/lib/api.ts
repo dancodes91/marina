@@ -1,4 +1,5 @@
 import { clearTokens, getAccessToken, getApiBase, getRefreshToken, setTokens } from "./auth";
+import { notifyAuthChanged } from "@/hooks/use-auth-session";
 
 export type ApiError = { detail?: string | string[] };
 
@@ -18,6 +19,7 @@ async function refreshAccess(): Promise<string | null> {
   }
   const data = (await res.json()) as { access_token: string; refresh_token: string };
   setTokens(data.access_token, data.refresh_token);
+  notifyAuthChanged();
   return data.access_token;
 }
 

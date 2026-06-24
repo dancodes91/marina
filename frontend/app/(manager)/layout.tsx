@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { SidebarProvider } from "@/hooks/use-sidebar";
 import { clearTokens, getAccessToken, isStaffToken } from "@/lib/auth";
+import { notifyAuthChanged } from "@/hooks/use-auth-session";
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
   function logout() {
     clearTokens();
+    notifyAuthChanged();
     router.replace("/login");
   }
 

@@ -47,7 +47,9 @@ async def login(
     )
     cust = r.scalar_one_or_none()
     if cust and cust.password_hash and verify_password(body.password, cust.password_hash):
-        access = jwt_util.create_access_token(cust.id, "customer", UserRole.CUSTOMER.value)
+        access = jwt_util.create_access_token(
+            cust.id, "customer", UserRole.CUSTOMER.value, email=cust.email or email
+        )
         refresh_raw = jwt_util.create_refresh_token_value()
         await _store_refresh(db, "customer", cust.id, refresh_raw)
         await db.commit()
@@ -58,7 +60,7 @@ async def login(
     )
     staff = r2.scalar_one_or_none()
     if staff and verify_password(body.password, staff.password_hash):
-        access = jwt_util.create_access_token(staff.id, "staff", staff.role)
+        access = jwt_util.create_access_token(staff.id, "staff", staff.role, email=staff.email)
         refresh_raw = jwt_util.create_refresh_token_value()
         await _store_refresh(db, "staff", staff.id, refresh_raw)
         await db.commit()
@@ -197,11 +199,22 @@ async def refresh_token(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> 
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     row.revoked = True
     if row.subject_type == "customer":
-        access = jwt_util.create_access_token(row.subject_id, "customer", UserRole.CUSTOMER.value)
+        cust = await db.get(Customer, row.subject_id)
+        access = jwt_util.create_access_token(
+            row.subject_id,
+            "customer",
+            UserRole.CUSTOMER.value,
+            email=cust.email if cust and cust.email else None,
+        )
     else:
         st = await db.get(StaffUser, row.subject_id)
         role = st.role if st else UserRole.MANAGER.value
-        access = jwt_util.create_access_token(row.subject_id, "staff", role)
+        access = jwt_util.create_access_token(
+            row.subject_id,
+            "staff",
+            role,
+            email=st.email if st else None,
+        )
     new_raw = jwt_util.create_refresh_token_value()
     await _store_refresh(db, row.subject_type, row.subject_id, new_raw)
     return TokenOut(access_token=access, refresh_token=new_raw)
