@@ -1,137 +1,255 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
+
+type SplineLine = {
+  yRatio: number;
+  amplitude: number;
+  speed: number;
+  phase: number;
+  chaos: number;
+  freq: number;
+  stroke: string;
+  width: number;
+  glow: number;
+};
+
+const SPLINE_LINES: SplineLine[] = [
+  {
+    yRatio: 0.18,
+    amplitude: 52,
+    speed: 0.42,
+    phase: 0,
+    chaos: 1.1,
+    freq: 0.011,
+    stroke: "rgba(255, 255, 255, 0.55)",
+    width: 1.4,
+    glow: 18,
+  },
+  {
+    yRatio: 0.28,
+    amplitude: 68,
+    speed: 0.31,
+    phase: 1.4,
+    chaos: 0.85,
+    freq: 0.009,
+    stroke: "rgba(120, 210, 200, 0.45)",
+    width: 1.2,
+    glow: 22,
+  },
+  {
+    yRatio: 0.38,
+    amplitude: 44,
+    speed: 0.55,
+    phase: 2.8,
+    chaos: 1.35,
+    freq: 0.013,
+    stroke: "rgba(30, 70, 120, 0.28)",
+    width: 1,
+    glow: 10,
+  },
+  {
+    yRatio: 0.48,
+    amplitude: 78,
+    speed: 0.38,
+    phase: 0.6,
+    chaos: 1.05,
+    freq: 0.008,
+    stroke: "rgba(255, 255, 255, 0.35)",
+    width: 1.1,
+    glow: 16,
+  },
+  {
+    yRatio: 0.58,
+    amplitude: 56,
+    speed: 0.47,
+    phase: 3.5,
+    chaos: 1.2,
+    freq: 0.012,
+    stroke: "rgba(60, 170, 155, 0.38)",
+    width: 1.3,
+    glow: 20,
+  },
+  {
+    yRatio: 0.68,
+    amplitude: 62,
+    speed: 0.29,
+    phase: 1.9,
+    chaos: 0.95,
+    freq: 0.01,
+    stroke: "rgba(20, 55, 95, 0.22)",
+    width: 0.9,
+    glow: 8,
+  },
+  {
+    yRatio: 0.78,
+    amplitude: 48,
+    speed: 0.52,
+    phase: 4.2,
+    chaos: 1.4,
+    freq: 0.014,
+    stroke: "rgba(255, 255, 255, 0.28)",
+    width: 1,
+    glow: 14,
+  },
+  {
+    yRatio: 0.88,
+    amplitude: 36,
+    speed: 0.36,
+    phase: 2.1,
+    chaos: 1.15,
+    freq: 0.009,
+    stroke: "rgba(100, 200, 185, 0.32)",
+    width: 1.2,
+    glow: 18,
+  },
+];
+
+function waveY(
+  x: number,
+  baseY: number,
+  t: number,
+  line: SplineLine,
+  segmentIndex: number
+): number {
+  const n = segmentIndex * line.chaos;
+  return (
+    baseY +
+    Math.sin(x * line.freq + t * line.speed + line.phase + n) * line.amplitude +
+    Math.cos(x * line.freq * 1.7 + t * line.speed * 1.25 + n * 0.6) * line.amplitude * 0.45 +
+    Math.sin(t * line.speed * 0.9 + n * 1.3) * line.amplitude * 0.25
+  );
+}
+
+function drawSpline(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  line: SplineLine,
+  t: number
+) {
+  const baseY = height * line.yRatio;
+  const segments = 14;
+  const step = width / segments;
+
+  ctx.beginPath();
+  ctx.moveTo(0, waveY(0, baseY, t, line, 0));
+
+  for (let i = 0; i < segments; i++) {
+    const x0 = i * step;
+    const x1 = x0 + step * 0.33;
+    const x2 = x0 + step * 0.66;
+    const x3 = x0 + step;
+
+    const y1 = waveY(x1, baseY, t, line, i + 0.33);
+    const y2 = waveY(x2, baseY, t, line, i + 0.66);
+    const y3 = waveY(x3, baseY, t, line, i + 1);
+
+    ctx.bezierCurveTo(x1, y1, x2, y2, x3, y3);
+  }
+
+  ctx.strokeStyle = line.stroke;
+  ctx.lineWidth = line.width;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.shadowColor = line.stroke;
+  ctx.shadowBlur = line.glow;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function paintLightPools(ctx: CanvasRenderingContext2D, width: number, height: number, t: number) {
+  const pools = [
+    { x: 0.15 + Math.sin(t * 0.08) * 0.04, y: 0.12, r: 0.28 },
+    { x: 0.78 + Math.cos(t * 0.06) * 0.05, y: 0.22, r: 0.22 },
+    { x: 0.45 + Math.sin(t * 0.05) * 0.06, y: 0.55, r: 0.35 },
+  ];
+
+  for (const pool of pools) {
+    const px = width * pool.x;
+    const py = height * pool.y;
+    const pr = width * pool.r;
+    const g = ctx.createRadialGradient(px, py, 0, px, py, pr);
+    g.addColorStop(0, "rgba(255, 255, 255, 0.14)");
+    g.addColorStop(0.45, "rgba(160, 220, 210, 0.06)");
+    g.addColorStop(1, "transparent");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, width, height);
+  }
+}
 
 /**
- * Ambient homepage backdrop: layered gradients + softly drifting SVG shapes (infinite loop).
+ * Chaotic glowing spline lines — canvas animation with soft light pools.
  */
 export function HomeBackground() {
-  const rootRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || !rootRef.current) return;
+    let frameId = 0;
+    let time = 0;
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
 
-    const blobs = rootRef.current.querySelectorAll<SVGElement>("[data-blob]");
-    const wave = rootRef.current.querySelector<SVGPathElement>("[data-wave-path]");
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const rect = container.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
 
-    const tweens: gsap.core.Tween[] = [];
+    const render = () => {
+      ctx.clearRect(0, 0, width, height);
 
-    blobs.forEach((blob, i) => {
-      const t = gsap.to(blob, {
-        x: (i % 2 === 0 ? 1 : -1) * (24 + i * 12),
-        y: (i % 3 === 0 ? -1 : 1) * (18 + i * 8),
-        rotation: i % 2 === 0 ? 8 : -6,
-        scale: 1.04 + i * 0.03,
-        duration: 9 + i * 1.5,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        delay: i * 0.6,
-      });
-      tweens.push(t);
-    });
+      if (!reduced) {
+        paintLightPools(ctx, width, height, time);
+      }
 
-    if (wave) {
-      tweens.push(
-        gsap.fromTo(
-          wave,
-          { attr: { d: "M0 48 C120 18 240 78 360 48 S600 18 720 48 L720 120 L0 120 Z" } },
-          {
-            attr: { d: "M0 40 C120 70 240 10 360 40 S600 70 720 40 L720 120 L0 120 Z" },
-            duration: 14,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-          }
-        )
-      );
-    }
+      const t = reduced ? 0 : time;
+      for (const line of SPLINE_LINES) {
+        drawSpline(ctx, width, height, line, t);
+      }
 
-    const shimmer = rootRef.current.querySelector("[data-shimmer]");
-    if (shimmer) {
-      tweens.push(
-        gsap.to(shimmer, {
-          xPercent: 120,
-          duration: 18,
-          repeat: -1,
-          ease: "none",
-        })
-      );
-    }
+      if (!reduced) {
+        time += 0.018;
+      }
+
+      frameId = requestAnimationFrame(render);
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+    render();
 
     return () => {
-      tweens.forEach((t) => t.kill());
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", resize);
     };
   }, []);
 
   return (
     <div
-      ref={rootRef}
+      ref={containerRef}
       className="home-ambient-bg pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       aria-hidden="true"
     >
-      {/* Soft light shimmer */}
-      <div
-        data-shimmer
-        className="absolute -left-1/3 top-0 h-full w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-40"
-      />
-
-      <svg
-        className="absolute -left-[10%] top-[8%] h-[420px] w-[420px] text-primary/10 blur-3xl"
-        viewBox="0 0 400 400"
-        data-blob
-      >
-        <circle cx="200" cy="200" r="160" fill="currentColor" />
-      </svg>
-
-      <svg
-        className="absolute -right-[5%] top-[22%] h-[360px] w-[360px] text-accent/15 blur-3xl"
-        viewBox="0 0 400 400"
-        data-blob
-      >
-        <ellipse cx="200" cy="200" rx="170" ry="130" fill="currentColor" />
-      </svg>
-
-      <svg
-        className="absolute bottom-[18%] left-[30%] h-[280px] w-[280px] text-marina-wave blur-2xl"
-        viewBox="0 0 300 300"
-        data-blob
-      >
-        <circle cx="150" cy="150" r="120" fill="currentColor" opacity="0.35" />
-      </svg>
-
-      {/* Drifting ring accent */}
-      <svg
-        className="absolute right-[18%] top-[55%] h-48 w-48 text-accent/20"
-        viewBox="0 0 200 200"
-        data-blob
-      >
-        <circle
-          cx="100"
-          cy="100"
-          r="72"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeDasharray="8 14"
-        />
-      </svg>
-
-      {/* Bottom wave layer */}
-      <svg
-        className="absolute bottom-0 left-0 w-[200%] text-primary/[0.07]"
-        viewBox="0 0 720 120"
-        preserveAspectRatio="none"
-        style={{ height: "min(28vh, 220px)" }}
-      >
-        <path
-          data-wave-path
-          fill="currentColor"
-          d="M0 48 C120 18 240 78 360 48 S600 18 720 48 L720 120 L0 120 Z"
-        />
-      </svg>
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+      <div className="home-light-veil absolute inset-0" />
+      <div className="home-vignette absolute inset-0" />
     </div>
   );
 }
