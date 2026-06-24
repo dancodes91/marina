@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -13,104 +13,120 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function HomeHero() {
   const rootRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced || !rootRef.current) return;
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.from("[data-hero='badge']", { opacity: 0, y: 16, duration: 0.5 })
-        .from("[data-hero='title']", { opacity: 0, y: 24, duration: 0.6 }, "-=0.2")
-        .from("[data-hero='subtitle']", { opacity: 0, y: 20, duration: 0.5 }, "-=0.3")
-        .from("[data-hero='cta']", { opacity: 0, y: 16, stagger: 0.12, duration: 0.45 }, "-=0.2")
-        .from("[data-hero='image']", { opacity: 0, scale: 0.96, duration: 0.7 }, "-=0.4");
+      const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+      tl.from("[data-hero='label']", { opacity: 0, y: 20, duration: 0.6 })
+        .from(
+          "[data-hero='line']",
+          { opacity: 0, y: 48, rotateX: 12, stagger: 0.08, duration: 0.85 },
+          "-=0.35"
+        )
+        .from("[data-hero='subtitle']", { opacity: 0, y: 24, duration: 0.65 }, "-=0.45")
+        .from("[data-hero='cta']", { opacity: 0, y: 20, stagger: 0.1, duration: 0.5 }, "-=0.35")
+        .from("[data-hero='image']", { opacity: 0, scale: 0.92, duration: 1 }, "-=0.7")
+        .from("[data-hero='stat']", { opacity: 0, y: 16, stagger: 0.08, duration: 0.45 }, "-=0.5");
 
-      gsap.from("[data-hero='stat']", {
-        scrollTrigger: { trigger: rootRef.current, start: "top 80%" },
-        opacity: 0,
-        y: 20,
-        stagger: 0.1,
-        duration: 0.5,
-      });
+      if (imageRef.current) {
+        gsap.to(imageRef.current, {
+          y: -40,
+          ease: "none",
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.2,
+          },
+        });
+      }
     }, rootRef);
 
     return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={rootRef} className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-24">
-        <div className="space-y-6">
+    <section ref={rootRef} className="relative overflow-hidden marina-gradient-soft grain">
+      <div className="pointer-events-none absolute -right-32 top-20 h-96 w-96 rounded-full bg-accent/15 blur-3xl" />
+      <div className="pointer-events-none absolute -left-20 bottom-0 h-72 w-72 rounded-full bg-marina-coral/10 blur-3xl" />
+
+      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
+        <div className="space-y-8">
+          <p data-hero="label" className="section-label">
+            Rhode River · Est. service portal
+          </p>
+
+          <h1 className="space-y-1 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.08]">
+            <span data-hero="line" className="block">
+              Boat care that
+            </span>
+            <span data-hero="line" className="block marina-text-gradient">
+              moves with you.
+            </span>
+          </h1>
+
           <p
-            data-hero="badge"
-            className="inline-flex rounded-full border border-accent/20 bg-white/70 px-3 py-1 text-sm font-medium text-accent shadow-sm backdrop-blur-sm"
+            data-hero="subtitle"
+            className="max-w-lg text-lg leading-relaxed text-muted-foreground"
           >
-            Rhode River Marina · Service Portal
+            Winterization, spring commissioning, and year-round service — submit work orders,
+            track progress, and pay online. Built for owners who are always on the water.
           </p>
-          <h2
-            data-hero="title"
-            className="text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-[3.25rem] lg:leading-tight"
-          >
-            Expert boat care,{" "}
-            <span className="marina-text-gradient">on your schedule</span>
-          </h2>
-          <p data-hero="subtitle" className="max-w-xl text-lg text-muted-foreground">
-            Submit winterization, spring commissioning, and year-round service requests online.
-            Track progress, view estimates, and pay invoices — all in one place.
-          </p>
-          <div className="flex flex-wrap gap-3" data-hero="cta">
-            <Button asChild size="lg" variant="accent">
+
+          <div className="flex flex-wrap items-center gap-4" data-hero="cta">
+            <Button asChild size="lg" className="btn-primary-glow rounded-full px-8">
               <Link href="/login">
-                Customer sign in
+                Open customer portal
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-primary/15 bg-white/60 backdrop-blur-sm">
-              <Link href="/requests/new?form_type=WINTER">
-                <Calendar className="h-4 w-4" />
-                Start work order
-              </Link>
-            </Button>
+            <Link
+              href="/availability"
+              className="text-sm font-semibold text-foreground underline-offset-4 transition-colors hover:text-accent hover:underline"
+            >
+              Browse slips & storage
+            </Link>
           </div>
-          <div className="grid grid-cols-3 gap-4 pt-4">
+
+          <dl className="grid grid-cols-3 gap-6 border-t border-border/60 pt-8">
             {[
-              { value: "40+", label: "Years on the water" },
-              { value: "24h", label: "Typical review time" },
+              { value: "40+", label: "Years on the river" },
+              { value: "24h", label: "Review turnaround" },
               { value: "100%", label: "Online tracking" },
             ].map((stat) => (
-              <div
-                key={stat.label}
-                data-hero="stat"
-                className="rounded-xl border border-white/50 bg-white/50 px-2 py-3 text-center shadow-sm backdrop-blur-sm sm:text-left"
-              >
-                <p className="text-2xl font-bold text-primary">{stat.value}</p>
-                <p className="text-xs text-muted-foreground sm:text-sm">{stat.label}</p>
+              <div key={stat.label} data-hero="stat">
+                <dt className="text-2xl font-bold text-primary lg:text-3xl">{stat.value}</dt>
+                <dd className="mt-1 text-xs text-muted-foreground sm:text-sm">{stat.label}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
 
         <div
+          ref={imageRef}
           data-hero="image"
-          className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/60 bg-primary/5 shadow-2xl shadow-primary/10 ring-1 ring-primary/10"
+          className="relative animate-float lg:justify-self-end"
         >
-          <Image
-            src="/wallace-office.webp"
-            alt="Rhode River Marina — Wallace service office"
-            fill
-            priority
-            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-primary/10 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-accent/20" />
-          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-            <p className="text-sm font-semibold text-white drop-shadow-md">Rhode River Marina</p>
-            <p className="mt-1 text-xs text-white/85 drop-shadow">
-              Full-service yard &amp; storage on the Rhode River
-            </p>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl shadow-primary/15 ring-1 ring-border/40">
+            <Image
+              src="/wallace-office.webp"
+              alt="Rhode River Marina office and waterfront"
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-marina-ink/50 via-transparent to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+              <p className="text-sm font-medium text-white/90">Rhode River Marina</p>
+              <p className="text-xs text-white/70">Service, storage & slip management</p>
+            </div>
           </div>
+          <div className="absolute -bottom-4 -left-4 -z-10 h-full w-full rounded-2xl bg-accent/20" />
         </div>
       </div>
     </section>

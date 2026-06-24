@@ -4,40 +4,40 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Leaf, Snowflake, Wrench } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowUpRight, Leaf, Snowflake, Wrench } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const SERVICES = [
   {
     formType: "WINTER",
+    num: "01",
     icon: Snowflake,
     title: "Winterization",
     description:
-      "Protect engines, systems, and hulls for cold storage. Select from our winter checklist or add custom notes.",
+      "Engine flush, fuel stabilizer, shrink wrap, and systems blowout — guided checklist so nothing is missed before storage.",
     href: "/requests/new?form_type=WINTER",
-    accent: "from-sky-500/10 to-primary/10",
+    tint: "from-sky-500/20 to-primary/5",
   },
   {
     formType: "SPRING",
+    num: "02",
     icon: Leaf,
     title: "Spring commissioning",
     description:
-      "De-winterize, service fluids, and get ready for the season. Schedule commissioning before launch day.",
+      "De-winterize, fluids, safety checks, and launch prep. Schedule before the rush hits the yard.",
     href: "/requests/new?form_type=SPRING",
-    accent: "from-emerald-500/10 to-accent/10",
+    tint: "from-emerald-500/20 to-accent/5",
   },
   {
     formType: "GENERAL",
+    num: "03",
     icon: Wrench,
     title: "General service",
     description:
-      "Engine, electrical, hull, canvas, and more. Describe your issue and our team will provide an estimate.",
+      "Engine, electrical, hull, canvas, and rigging. Describe the issue — we build the estimate from real labor codes.",
     href: "/requests/new?form_type=GENERAL",
-    accent: "from-amber-500/10 to-marina-wave/30",
+    tint: "from-marina-coral/20 to-amber-500/5",
   },
 ] as const;
 
@@ -49,13 +49,20 @@ export function ServicesSection() {
     if (reduced || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      gsap.from("[data-service-card]", {
-        scrollTrigger: { trigger: sectionRef.current, start: "top 75%" },
+      gsap.from("[data-service-head]", {
+        scrollTrigger: { trigger: sectionRef.current, start: "top 78%" },
         opacity: 0,
         y: 32,
-        stagger: 0.15,
-        duration: 0.6,
-        ease: "power2.out",
+        duration: 0.7,
+        ease: "power3.out",
+      });
+      gsap.from("[data-service-card]", {
+        scrollTrigger: { trigger: sectionRef.current, start: "top 72%" },
+        opacity: 0,
+        y: 48,
+        stagger: 0.14,
+        duration: 0.75,
+        ease: "power3.out",
       });
     }, sectionRef);
 
@@ -63,36 +70,45 @@ export function ServicesSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-white/50 py-16 backdrop-blur-[2px] md:py-24">
+    <section ref={sectionRef} className="bg-background py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-primary sm:text-4xl">Seasonal & year-round service</h2>
-          <p className="mt-3 text-muted-foreground">
-            Choose the work order type that fits your needs. Each form includes a guided checklist so nothing is missed.
+        <div data-service-head className="mb-14 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <p className="section-label mb-3">What we do</p>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              Seasonal & year-round{" "}
+              <span className="marina-text-gradient">service forms</span>
+            </h2>
+          </div>
+          <p className="max-w-md text-muted-foreground">
+            Three work order types with job checklists — the same structure customers expect from
+            a full-service river marina.
           </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
+
+        <div className="grid gap-6 lg:grid-cols-3">
           {SERVICES.map((service) => {
             const Icon = service.icon;
             return (
-              <Card
+              <Link
                 key={service.formType}
+                href={service.href}
                 data-service-card
-                className={`relative overflow-hidden border-border/60 bg-gradient-to-br ${service.accent}`}
+                className={`card-lift group relative flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br ${service.tint} p-8`}
               >
-                <CardHeader>
-                  <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </div>
-                  <CardTitle className="text-xl">{service.title}</CardTitle>
-                  <CardDescription className="text-base">{service.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href={service.href}>Start {service.title.toLowerCase()}</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                <span className="text-5xl font-bold text-primary/10">{service.num}</span>
+                <div className="mt-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/80 text-primary shadow-sm ring-1 ring-border/40">
+                  <Icon className="h-6 w-6" aria-hidden />
+                </div>
+                <h3 className="mt-6 text-xl font-semibold text-foreground">{service.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {service.description}
+                </p>
+                <span className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-accent transition-colors group-hover:text-primary">
+                  Start request
+                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </span>
+              </Link>
             );
           })}
         </div>

@@ -4,62 +4,31 @@
 
 @layer base {
   :root {
-    --background: 38 33% 94%;
-    --foreground: 220 45% 14%;
-    --card: 40 40% 98%;
-    --card-foreground: 220 45% 14%;
-    --popover: 40 40% 98%;
-    --popover-foreground: 220 45% 14%;
-    --primary: 215 65% 22%;
-    --primary-foreground: 38 30% 96%;
-    --secondary: 38 25% 88%;
-    --secondary-foreground: 220 40% 18%;
-    --muted: 38 22% 90%;
+    --background: 210 25% 98%;
+    --foreground: 222 55% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 55% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 55% 9%;
+    --primary: 218 62% 16%;
+    --primary-foreground: 210 30% 98%;
+    --secondary: 210 22% 93%;
+    --secondary-foreground: 222 45% 14%;
+    --muted: 210 18% 94%;
     --muted-foreground: 220 12% 42%;
-    --accent: 175 55% 38%;
+    --accent: 172 68% 40%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 38 18% 82%;
-    --input: 38 18% 82%;
-    --ring: 175 55% 38%;
-    --radius: 0.5rem;
-    --chart-1: 215 65% 22%;
-    --chart-2: 175 55% 38%;
-    --chart-3: 38 45% 72%;
-    --chart-4: 200 50% 45%;
-    --chart-5: 160 40% 35%;
-    --marina-navy: 215 65% 22%;
-    --marina-teal: 175 55% 38%;
-    --marina-sand: 38 33% 94%;
-    --marina-wave: 195 55% 88%;
-  }
-
-  .dark {
-    --background: 220 45% 8%;
-    --foreground: 38 25% 92%;
-    --card: 220 40% 11%;
-    --card-foreground: 38 25% 92%;
-    --popover: 220 40% 11%;
-    --popover-foreground: 38 25% 92%;
-    --primary: 195 55% 55%;
-    --primary-foreground: 220 45% 8%;
-    --secondary: 220 30% 16%;
-    --secondary-foreground: 38 25% 92%;
-    --muted: 220 30% 16%;
-    --muted-foreground: 38 15% 65%;
-    --accent: 175 50% 42%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 45%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 25% 18%;
-    --input: 220 25% 18%;
-    --ring: 175 50% 42%;
-    --chart-1: 195 55% 55%;
-    --chart-2: 175 50% 42%;
-    --chart-3: 38 35% 55%;
-    --chart-4: 200 45% 50%;
-    --chart-5: 160 35% 40%;
+    --border: 214 22% 88%;
+    --input: 214 22% 88%;
+    --ring: 172 68% 40%;
+    --radius: 0.75rem;
+    --marina-navy: 218 62% 16%;
+    --marina-teal: 172 68% 40%;
+    --marina-coral: 16 90% 58%;
+    --marina-sand: 38 35% 96%;
+    --marina-ink: 222 55% 7%;
   }
 }
 
@@ -68,9 +37,18 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  ::selection {
+    background: hsl(var(--marina-teal) / 0.25);
+    color: hsl(var(--marina-ink));
   }
 }
 
@@ -78,52 +56,57 @@
   .marina-gradient {
     background: linear-gradient(
       135deg,
-      hsl(var(--marina-navy)) 0%,
-      hsl(200 55% 28%) 50%,
+      hsl(var(--marina-ink)) 0%,
+      hsl(218 55% 22%) 45%,
       hsl(var(--marina-teal)) 100%
+    );
+  }
+
+  .marina-gradient-soft {
+    background: linear-gradient(
+      180deg,
+      hsl(var(--background)) 0%,
+      hsl(172 40% 94%) 100%
     );
   }
 
   .marina-text-gradient {
     background: linear-gradient(
-      135deg,
-      hsl(var(--marina-navy)),
-      hsl(var(--marina-teal))
+      120deg,
+      hsl(var(--marina-teal)),
+      hsl(var(--marina-coral))
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .home-ambient-bg {
-    background: linear-gradient(
-      168deg,
-      hsl(215 45% 18%) 0%,
-      hsl(210 40% 24%) 18%,
-      hsl(195 35% 88%) 52%,
-      hsl(38 32% 94%) 78%,
-      hsl(40 38% 97%) 100%
-    );
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-accent;
   }
 
-  .home-light-veil {
-    background: linear-gradient(
-      125deg,
-      hsl(0 0% 100% / 0.08) 0%,
-      transparent 40%,
-      hsl(175 60% 70% / 0.06) 70%,
-      transparent 100%
-    );
-    mix-blend-mode: screen;
-    pointer-events: none;
+  .nav-link {
+    @apply relative text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground;
   }
 
-  .home-vignette {
-    background: radial-gradient(
-      ellipse 85% 70% at 50% 45%,
-      transparent 40%,
-      hsl(215 50% 15% / 0.12) 100%
-    );
-    pointer-events: none;
+  .nav-link-active {
+    @apply text-foreground;
+  }
+
+  .nav-link-active::after {
+    content: "";
+    @apply absolute -bottom-1 left-0 h-0.5 w-full rounded-full bg-accent;
+  }
+
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  .card-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5;
+  }
+
+  .btn-primary-glow {
+    box-shadow: 0 4px 24px -4px hsl(var(--marina-teal) / 0.45);
   }
 }

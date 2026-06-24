@@ -1,21 +1,28 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Marina Service Portal",
-  description: "Customer service requests for your marina",
+  title: "Rhode River Marina · Service Portal",
+  description: "Seasonal work orders, slip storage, and service tracking",
   manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#143352",
+  themeColor: "#0f2744",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen antialiased">
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen font-sans antialiased">
         {children}
         <Toaster richColors closeButton position="top-right" />
       </body>

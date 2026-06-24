@@ -57,8 +57,9 @@ const config: Config = {
         marina: {
           navy: "hsl(var(--marina-navy))",
           teal: "hsl(var(--marina-teal))",
+          coral: "hsl(var(--marina-coral))",
           sand: "hsl(var(--marina-sand))",
-          wave: "hsl(var(--marina-wave))",
+          ink: "hsl(var(--marina-ink))",
         },
       },
       borderRadius: {
@@ -67,7 +68,7 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -82,11 +83,21 @@ const config: Config = {
           "0%, 100%": { transform: "translateX(0)" },
           "50%": { transform: "translateX(-2%)" },
         },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "wave-drift": "wave-drift 8s ease-in-out infinite",
+        marquee: "marquee 28s linear infinite",
+        float: "float 5s ease-in-out infinite",
       },
     },
   },

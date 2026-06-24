@@ -5,9 +5,8 @@ import Link from "next/link";
 
 import { SlipGrid } from "@/components/availability/SlipGrid";
 import { StorageList } from "@/components/availability/StorageList";
-import { MarinaHeader } from "@/components/layout/MarinaHeader";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { WaveDivider } from "@/components/layout/WaveDivider";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api";
@@ -34,24 +33,32 @@ export default function AvailabilityPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <MarinaHeader title="Slips & Storage" subtitle="Current availability at Rhode River Marina">
-        <Button asChild variant="secondary" size="sm">
-          <Link href="/">Home</Link>
-        </Button>
-      </MarinaHeader>
+      <SiteHeader
+        title="Slips & Storage"
+        subtitle="Rhode River Marina"
+        items={[
+          { href: "/", label: "Home" },
+          { href: "/login", label: "Sign in" },
+        ]}
+        cta={{ href: "/reservations/new", label: "Request reservation →" }}
+      />
       <WaveDivider variant="sand" />
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-primary sm:text-3xl">Browse availability</h1>
-            <p className="mt-1 text-muted-foreground">
-              Wet slips and winter storage options. Sign in to submit a reservation request.
-            </p>
-          </div>
-          <Button asChild variant="accent">
-            <Link href="/reservations/new">Request reservation</Link>
-          </Button>
+      <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mb-10 max-w-2xl">
+          <p className="section-label mb-2">Availability</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Wet slips & <span className="marina-text-gradient">storage</span>
+          </h1>
+          <p className="mt-3 text-muted-foreground">
+            Current options at Rhode River Marina. Sign in to submit a reservation request.
+          </p>
+          <Link
+            href="/reservations/new"
+            className="mt-4 inline-block text-sm font-semibold text-accent hover:text-primary"
+          >
+            Request reservation →
+          </Link>
         </div>
 
         {error && (

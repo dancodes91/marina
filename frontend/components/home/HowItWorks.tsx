@@ -12,25 +12,25 @@ const STEPS = [
     icon: ClipboardList,
     step: "01",
     title: "Submit your work order",
-    description: "Pick winter, spring, or general service. Select jobs from our checklist and add photos or notes.",
+    description: "Pick winter, spring, or general service. Checklist jobs, attach photos, set your preferred date.",
   },
   {
     icon: Sparkles,
     step: "02",
     title: "We review & estimate",
-    description: "Our service team reviews your request, assigns labor codes, and sends you a total estimate.",
+    description: "Service team reviews your request, assigns labor codes, and sends a clear total estimate.",
   },
   {
     icon: Ship,
     step: "03",
     title: "Schedule & service",
-    description: "Once approved, we schedule haul-out or dockside work. Track status updates in real time.",
+    description: "Approved work gets scheduled. Track every status change — under review through in progress.",
   },
   {
     icon: CreditCard,
     step: "04",
     title: "Pay & launch",
-    description: "When work is complete, pay your invoice online and pick up or launch on your timeline.",
+    description: "When work is complete, pay online and coordinate pickup or launch on your timeline.",
   },
 ];
 
@@ -43,12 +43,12 @@ export function HowItWorks() {
 
     const ctx = gsap.context(() => {
       gsap.from("[data-step]", {
-        scrollTrigger: { trigger: sectionRef.current, start: "top 70%" },
+        scrollTrigger: { trigger: sectionRef.current, start: "top 68%" },
         opacity: 0,
-        x: -24,
+        y: 40,
         stagger: 0.12,
-        duration: 0.55,
-        ease: "power2.out",
+        duration: 0.65,
+        ease: "power3.out",
       });
     }, sectionRef);
 
@@ -56,27 +56,40 @@ export function HowItWorks() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative bg-white/40 py-16 backdrop-blur-[2px] md:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="text-3xl font-bold text-primary sm:text-4xl">How it works</h2>
-          <p className="mt-3 text-muted-foreground">
-            From first click to launch day — a simple four-step process designed for busy boat owners.
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden bg-marina-ink py-20 text-white md:py-28"
+    >
+      <div className="pointer-events-none absolute inset-0 grain opacity-30" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-14 max-w-2xl text-center">
+          <p className="section-label mb-3 text-marina-teal">How it works</p>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+            From click to{" "}
+            <span className="italic text-marina-teal">launch day</span>
+          </h2>
+          <p className="mt-4 text-white/65">
+            Four steps designed for busy boat owners — no phone tag, no re-entering your hull details.
           </p>
         </div>
-        <ol className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+
+        <ol className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((item) => {
             const Icon = item.icon;
             return (
-              <li key={item.step} data-step className="relative">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="text-3xl font-bold text-accent/40">{item.step}</span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+              <li
+                key={item.step}
+                data-step
+                className="group border-t border-white/15 pt-8 transition-colors hover:border-marina-teal/60"
+              >
+                <div className="mb-6 flex items-center justify-between">
+                  <span className="text-4xl font-bold text-white/15">{item.step}</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-marina-teal ring-1 ring-white/10 transition-colors group-hover:bg-marina-teal group-hover:text-white">
+                    <Icon className="h-5 w-5" aria-hidden />
                   </div>
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-primary">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                <h3 className="mb-2 text-lg font-semibold">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-white/60">{item.description}</p>
               </li>
             );
           })}
