@@ -19,4 +19,10 @@ celery_app.conf.update(
     enable_utc=True,
     task_default_retry_delay=60,
     task_max_retries=3,
+    beat_schedule={
+        "wallace-sync-every-15-min": {
+            "task": "wallace.run_sync",
+            "schedule": float(settings.wallace_sync_interval_seconds),
+        },
+    },
 )

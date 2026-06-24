@@ -8,15 +8,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from marina_service.auth import jwt as jwt_util
 from marina_service.auth.password import hash_password, verify_password
+from marina_service.auth.deps import get_current_marina
 from marina_service.config import get_settings
 from marina_service.database import get_db
+from marina_service.models.boat import Boat
 from marina_service.models.customer import Customer
-from marina_service.models.enums import UserRole
+from marina_service.models.enums import RequestStatus, UserRole
+from marina_service.models.marina import Marina
+from marina_service.models.service_request import RequestStatusEvent, ServiceRequest
 from marina_service.models.tokens import ClaimToken, PasswordResetToken, RefreshToken
 from marina_service.models.staff_user import StaffUser
 from marina_service.schemas.auth import (
     ClaimAccountIn,
     ForgotPasswordIn,
+    GuestSubmitIn,
+    GuestSubmitOut,
     LoginIn,
     LogoutIn,
     RefreshIn,
@@ -24,30 +30,148 @@ from marina_service.schemas.auth import (
     TokenOut,
 )
 from marina_service.services import notifications as notif_service
+from marina_service.services.request_numbers import next_request_number
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=TokenOut)
-async def login(body: LoginIn, db: AsyncSession = Depends(get_db)) -> TokenOut:
+async def login(
+    body: LoginIn,
+    marina: Marina = Depends(get_current_marina),
+    db: AsyncSession = Depends(get_db),
+) -> TokenOut:
     email = body.email.strip().lower()
-    r = await db.execute(select(Customer).where(Customer.email == email))
+    r = await db.execute(
+        select(Customer).where(Customer.marina_id == marina.id, Customer.email == email)
+    )
     cust = r.scalar_one_or_none()
     if cust and cust.password_hash and verify_password(body.password, cust.password_hash):
         access = jwt_util.create_access_token(cust.id, "customer", UserRole.CUSTOMER.value)
         refresh_raw = jwt_util.create_refresh_token_value()
         await _store_refresh(db, "customer", cust.id, refresh_raw)
+        await db.commit()
         return TokenOut(access_token=access, refresh_token=refresh_raw)
 
-    r2 = await db.execute(select(StaffUser).where(StaffUser.email == email))
+    r2 = await db.execute(
+        select(StaffUser).where(StaffUser.marina_id == marina.id, StaffUser.email == email)
+    )
     staff = r2.scalar_one_or_none()
     if staff and verify_password(body.password, staff.password_hash):
         access = jwt_util.create_access_token(staff.id, "staff", staff.role)
         refresh_raw = jwt_util.create_refresh_token_value()
         await _store_refresh(db, "staff", staff.id, refresh_raw)
+        await db.commit()
         return TokenOut(access_token=access, refresh_token=refresh_raw)
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+
+@router.post("/guest-submit", response_model=GuestSubmitOut, status_code=status.HTTP_201_CREATED)
+async def guest_submit(
+    body: GuestSubmitIn,
+    marina: Marina = Depends(get_current_marina),
+    db: AsyncSession = Depends(get_db),
+) -> GuestSubmitOut:
+    email = body.customer.email.strip().lower()
+    r = await db.execute(
+        select(Customer).where(Customer.marina_id == marina.id, Customer.email == email)
+    )
+    cust = r.scalar_one_or_none()
+    if not cust:
+        cust = Customer(
+            marina_id=marina.id,
+            email=email,
+            phone=body.customer.phone,
+            first_name=body.customer.first_name,
+            last_name=body.customer.last_name,
+            street=body.customer.street,
+            city=body.customer.city,
+            state=body.customer.state,
+            zip_code=body.customer.zip_code,
+            account_claimed=False,
+            is_active=True,
+        )
+        db.add(cust)
+        await db.flush()
+
+    boat = Boat(
+        marina_id=marina.id,
+        customer_id=cust.id,
+        make=body.boat.make,
+        model=body.boat.model,
+        year=body.boat.year,
+        loa_ft=body.boat.loa_ft,
+        loa_in=body.boat.loa_in,
+        beam_ft=body.boat.beam_ft,
+        beam_in=body.boat.beam_in,
+        registration=body.boat.registration,
+        vin_number=body.boat.vin_number,
+        photos=[],
+    )
+    db.add(boat)
+    await db.flush()
+
+    num = await next_request_number(db)
+    req = ServiceRequest(
+        marina_id=marina.id,
+        request_number=num,
+        customer_id=cust.id,
+        boat_id=boat.id,
+        form_type=body.form_type,
+        status=RequestStatus.SUBMITTED,
+        category=body.category,
+        description=body.description,
+        custom_description=body.custom_description,
+        job_selections=body.job_selections or [],
+        customer_notes=body.customer_notes,
+        preferred_date=body.preferred_date,
+        preferred_time_slot=body.preferred_time_slot,
+        attachments=[],
+    )
+    db.add(req)
+    await db.flush()
+    db.add(RequestStatusEvent(request_id=req.id, status=RequestStatus.SUBMITTED))
+
+    raw_token = secrets.token_urlsafe(32)
+    exp = datetime.now(timezone.utc) + timedelta(days=7)
+    db.add(
+        ClaimToken(
+            customer_id=cust.id,
+            token_hash=jwt_util.hash_refresh_token(raw_token),
+            expires_at=exp,
+            used=False,
+        )
+    )
+    await db.commit()
+
+    settings = get_settings()
+    claim_url = f"{settings.public_app_url}/claim?token={raw_token}"
+    _send_claim_email(db, email, claim_url, num)
+
+    return GuestSubmitOut(request_number=num, request_id=req.id, claim_token=raw_token)
+
+
+def _send_claim_email(db: AsyncSession, email: str, claim_url: str, request_number: str) -> None:
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+
+    sync_maker = sessionmaker(bind=create_engine(get_settings().database_url_sync))
+    s = sync_maker()
+    try:
+        notif_service.send_email_sync(
+            s,
+            to_email=email,
+            subject=f"Service request {request_number} submitted",
+            body_text=(
+                f"Your service request {request_number} has been submitted.\n\n"
+                f"Create your account to track status: {claim_url}"
+            ),
+            template_key="guest_submit_claim",
+        )
+        s.commit()
+    finally:
+        s.close()
 
 
 async def _store_refresh(db: AsyncSession, subject_type: str, subject_id: uuid.UUID, raw: str) -> None:

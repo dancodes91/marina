@@ -1,6 +1,14 @@
 # Marina Service Portal
 
-Customer-facing service request system for marinas using Wallace Marina Management. Stack: **FastAPI**, **Next.js 14**, **PostgreSQL**, **Redis/Celery**, **SendGrid/Twilio**, **S3-compatible storage (MinIO locally)**.
+Multi-tenant customer-facing marina portal: seasonal work orders, slip/storage reservations, labor pricing, Wallace CSV sync, and payment stubs (Gravity). Stack: **FastAPI**, **Next.js 14**, **PostgreSQL**, **Redis/Celery**, **SendGrid/Twilio**, **S3/MinIO**.
+
+## Features
+
+- **Marketing site** — GSAP landing page, slip/storage availability browse
+- **Customer portal** — 4-step work order wizard (Winter/Spring/General), dashboard, reservations, payment stub
+- **Manager dashboard** — Shadcn sidebar UI: requests, labor lines, reservations, sync, notifications
+- **Multi-tenant** — `Marina` model; API scoped via `X-Marina-Slug` header (default `rhode-river`)
+- **Wallace sync** — CSV folder watch, upload API, Celery beat (15 min)
 
 ## Prerequisites
 
@@ -15,7 +23,7 @@ Customer-facing service request system for marinas using Wallace Marina Manageme
    cp .env.example .env
    ```
 
-   Edit `.env` and set `JWT_SECRET_KEY`, and optionally SendGrid/Twilio keys for notifications.
+   Set `JWT_SECRET_KEY`, `NEXT_PUBLIC_MARINA_SLUG=rhode-river`, and optionally SendGrid/Twilio keys.
 
 2. Build and run:
 
@@ -23,23 +31,19 @@ Customer-facing service request system for marinas using Wallace Marina Manageme
    docker compose up --build
    ```
 
-3. Run database migrations (first time):
+3. Bootstrap (migrations + default marina + test users):
 
    ```bash
-   docker compose exec api alembic upgrade head
+   docker compose exec api python -m scripts.bootstrap
    ```
 
-4. Create an admin user:
+   Or on Render, visit once: `/api/v1/setup/bootstrap?key=YOUR_BOOTSTRAP_API_KEY&format=html`
 
-   ```bash
-   docker compose exec api python -m scripts.create_admin
-   ```
-
-5. Open the app:
+4. Open the app:
 
    - Frontend: http://localhost:3000
+   - Manager: http://localhost:3000/manager (staff login)
    - API docs: http://localhost:8000/docs
-   - MinIO console: http://localhost:9001 (default user/pass from `.env`)
 
 6. Optional: generate a **customer claim token** after Wallace sync has created customer rows with an email set:
 
@@ -55,6 +59,33 @@ Drop Wallace export CSV files into the shared volume path (inside containers: `/
 
 When Wallace runs on a Windows desktop and the API runs on Render, the cloud cannot access the desktop export folder directly.
 Use **upload-based sync**:
+
+### Render environment variables
+
+Set at minimum:
+
+| Variable | Notes |
+|----------|--------|
+| `DATABASE_URL` | Render Postgres **Internal** URL (`postgresql://...` is auto-converted to `postgresql+asyncpg://`) |
+| `JWT_SECRET_KEY` | Long random string |
+| `CORS_ORIGINS` | Your Vercel frontend URL |
+| `PUBLIC_APP_URL` | Frontend URL (emails / links) |
+| `BOOTSTRAP_API_KEY` | Secret key for the setup URL below |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Manager login to seed |
+| `TEST_CUSTOMER_EMAIL` / `TEST_CUSTOMER_PASSWORD` | Customer login to seed (includes a test boat) |
+| `DEFAULT_MARINA_SLUG` / `NEXT_PUBLIC_MARINA_SLUG` | Tenant slug (`rhode-river`) |
+| `GRAVITY_STUB_MODE` | `true` until real Gravity API is wired |
+| `WALLACE_UPLOAD_API_KEY` | For CSV upload from Wallace desktop |
+
+### First-time setup (no custom start command needed)
+
+After the API is live, open this URL once in your browser (replace host and key):
+
+```
+https://YOUR-RENDER-API.onrender.com/api/v1/setup/bootstrap?key=YOUR_BOOTSTRAP_API_KEY
+```
+
+This runs database migrations and seeds test users from the env vars above. It is idempotent — existing users are not recreated. JSON is returned by default; add `&format=html` for a simple results page.
 
 1. Set `WALLACE_UPLOAD_API_KEY` in your Render backend environment.
 2. On the Windows Wallace machine, schedule a task that uploads new CSV exports to:

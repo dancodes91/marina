@@ -48,16 +48,20 @@ async def create_request(
     db: AsyncSession = Depends(get_db),
 ) -> ServiceRequest:
     boat = await db.get(Boat, body.boat_id)
-    if not boat or boat.customer_id != customer.id:
+    if not boat or boat.customer_id != customer.id or boat.marina_id != customer.marina_id:
         raise HTTPException(status_code=400, detail="Invalid boat")
     num = await next_request_number(db)
     req = ServiceRequest(
+        marina_id=customer.marina_id,
         request_number=num,
         customer_id=customer.id,
         boat_id=body.boat_id,
+        form_type=body.form_type,
         status=RequestStatus.SUBMITTED,
         category=body.category,
         description=body.description,
+        custom_description=body.custom_description,
+        job_selections=body.job_selections or [],
         customer_notes=body.customer_notes,
         preferred_date=body.preferred_date,
         preferred_time_slot=body.preferred_time_slot,
@@ -82,7 +86,7 @@ async def get_request(
     db: AsyncSession = Depends(get_db),
 ) -> ServiceRequest:
     req = await db.get(ServiceRequest, request_id)
-    if not req or req.customer_id != customer.id:
+    if not req or req.customer_id != customer.id or req.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     return req
 
@@ -95,7 +99,7 @@ async def presign_attachment(
     db: AsyncSession = Depends(get_db),
 ) -> PresignUploadOut:
     req = await db.get(ServiceRequest, request_id)
-    if not req or req.customer_id != customer.id:
+    if not req or req.customer_id != customer.id or req.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     key = new_attachment_key(f"requests/{request_id}", body.filename)
     url = presigned_put_url(key, body.content_type)
@@ -113,7 +117,7 @@ async def cancel_request(
     db: AsyncSession = Depends(get_db),
 ) -> dict:
     req = await db.get(ServiceRequest, request_id)
-    if not req or req.customer_id != customer.id:
+    if not req or req.customer_id != customer.id or req.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     if req.status not in (RequestStatus.SUBMITTED, RequestStatus.UNDER_REVIEW):
         raise HTTPException(status_code=400, detail="Cannot cancel this request")
@@ -135,7 +139,7 @@ async def timeline(
     db: AsyncSession = Depends(get_db),
 ) -> list[RequestStatusEvent]:
     req = await db.get(ServiceRequest, request_id)
-    if not req or req.customer_id != customer.id:
+    if not req or req.customer_id != customer.id or req.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     r = await db.execute(
         select(RequestStatusEvent)

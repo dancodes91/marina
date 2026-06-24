@@ -2,6 +2,8 @@ import { clearTokens, getAccessToken, getApiBase, getRefreshToken, setTokens } f
 
 export type ApiError = { detail?: string | string[] };
 
+const MARINA_SLUG = process.env.NEXT_PUBLIC_MARINA_SLUG ?? "rhode-river";
+
 async function refreshAccess(): Promise<string | null> {
   const rt = getRefreshToken();
   if (!rt) return null;
@@ -31,6 +33,7 @@ export async function apiFetch<T>(
     auth = getAccessToken();
   }
   const headers = new Headers(init.headers);
+  headers.set("X-Marina-Slug", MARINA_SLUG);
   if (auth) headers.set("Authorization", `Bearer ${auth}`);
   if (!headers.has("Content-Type") && init.body && typeof init.body === "string") {
     headers.set("Content-Type", "application/json");
@@ -41,6 +44,42 @@ export async function apiFetch<T>(
     if (newTok) {
       headers.set("Authorization", `Bearer ${newTok}`);
       res = await fetch(`${getApiBase()}${path}`, { ...init, headers });
+    }
+  }
+  if (!res.ok) {
+    let err: ApiError = {};
+    try {
+      err = (await res.json()) as ApiError;
+    } catch {
+      err = { detail: res.statusText };
+    }
+    throw new Error(typeof err.detail === "string" ? err.detail : JSON.stringify(err.detail ?? res.statusText));
+  }
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
+export async function apiUpload<T>(
+  path: string,
+  formData: FormData,
+  options: { method?: string; token?: string | null } = {}
+): Promise<T> {
+  const { token, method = "POST" } = options;
+  let auth: string | null;
+  if (Object.prototype.hasOwnProperty.call(options, "token")) {
+    auth = token ?? null;
+  } else {
+    auth = getAccessToken();
+  }
+  const headers = new Headers();
+  headers.set("X-Marina-Slug", MARINA_SLUG);
+  if (auth) headers.set("Authorization", `Bearer ${auth}`);
+  let res = await fetch(`${getApiBase()}${path}`, { method, headers, body: formData });
+  if (res.status === 401 && auth) {
+    const newTok = await refreshAccess();
+    if (newTok) {
+      headers.set("Authorization", `Bearer ${newTok}`);
+      res = await fetch(`${getApiBase()}${path}`, { method, headers, body: formData });
     }
   }
   if (!res.ok) {

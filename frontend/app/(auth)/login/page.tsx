@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+
+import { AuthCard } from "@/components/auth/AuthCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
 import { decodeJwtPayload, setTokens } from "@/lib/auth";
 
@@ -38,13 +43,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-900">Sign in</h1>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+    <AuthCard
+      title="Sign in"
+      description="Access your boats, work orders, and invoices"
+      footer={
+        <>
+          <Link href="/forgot-password" className="text-accent hover:underline">
+            Forgot password?
+          </Link>
+          {" · "}
+          <Link href="/" className="text-accent hover:underline">
+            Back to home
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm text-slate-600">Email</label>
-          <input
-            className="w-full rounded-md border border-slate-300 px-3 py-2"
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            className="mt-1"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -53,9 +72,10 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-600">Password</label>
-          <input
-            className="w-full rounded-md border border-slate-300 px-3 py-2"
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            className="mt-1"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -63,25 +83,11 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-blue-700 py-2.5 font-medium text-white hover:bg-blue-800 disabled:opacity-60"
-        >
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Button type="submit" variant="accent" className="w-full" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}
-        </button>
+        </Button>
       </form>
-      <p className="mt-4 text-center text-sm text-slate-600">
-        <Link className="text-blue-700 hover:underline" href="/forgot-password">
-          Forgot password?
-        </Link>
-      </p>
-      <p className="mt-2 text-center text-sm text-slate-600">
-        <Link href="/" className="text-blue-700 hover:underline">
-          Home
-        </Link>
-      </p>
-    </div>
+    </AuthCard>
   );
 }

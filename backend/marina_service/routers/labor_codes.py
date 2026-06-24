@@ -21,9 +21,9 @@ async def list_labor_codes(
     q: str | None = Query(None, description="Search"),
     active_only: bool = True,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> list[LaborCode]:
-    stmt = select(LaborCode)
+    stmt = select(LaborCode).where(LaborCode.marina_id == staff.marina_id)
     if active_only:
         stmt = stmt.where(LaborCode.is_active.is_(True))
     if q:
@@ -44,10 +44,10 @@ async def list_labor_codes(
 async def get_labor_code(
     labor_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> LaborCode:
     row = await db.get(LaborCode, labor_id)
-    if not row:
+    if not row or row.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     return row
 
@@ -56,9 +56,9 @@ async def get_labor_code(
 async def create_labor_code(
     body: LaborCodeCreate,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_admin),
+    staff: StaffUser = Depends(get_admin),
 ) -> LaborCode:
-    row = LaborCode(**body.model_dump())
+    row = LaborCode(marina_id=staff.marina_id, **body.model_dump())
     db.add(row)
     await db.flush()
     return row
@@ -69,10 +69,10 @@ async def patch_labor_code(
     labor_id: UUID,
     body: LaborCodePatch,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_admin),
+    staff: StaffUser = Depends(get_admin),
 ) -> LaborCode:
     row = await db.get(LaborCode, labor_id)
-    if not row:
+    if not row or row.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     for k, v in body.model_dump(exclude_unset=True).items():
         setattr(row, k, v)
@@ -83,10 +83,10 @@ async def patch_labor_code(
 async def delete_labor_code(
     labor_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_admin),
+    staff: StaffUser = Depends(get_admin),
 ) -> dict:
     row = await db.get(LaborCode, labor_id)
-    if not row:
+    if not row or row.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     row.is_active = False
     return {"ok": True}
@@ -96,7 +96,7 @@ async def delete_labor_code(
 async def import_csv(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_admin),
+    staff: StaffUser = Depends(get_admin),
 ) -> dict:
     raw = await file.read()
     text = raw.decode("utf-8-sig")
@@ -112,6 +112,7 @@ async def import_csv(
         except ValueError:
             rt = RateType.HOURLY
         lc = LaborCode(
+            marina_id=staff.marina_id,
             labor_code=str(code).strip(),
             job_first_line=row.get("job_first_line") or row.get("JOB_FIRST_LINE"),
             job_description=row.get("job_description"),

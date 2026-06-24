@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+
+import { AuthCard } from "@/components/auth/AuthCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
@@ -25,36 +30,37 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-900">Forgot password</h1>
+    <AuthCard
+      title="Forgot password"
+      description="We'll email you a link to reset your password"
+      footer={
+        <Link href="/login" className="text-accent hover:underline">
+          Back to sign in
+        </Link>
+      }
+    >
       {done ? (
-        <p className="text-slate-600">If an account exists for that email, a reset link has been sent.</p>
+        <p className="text-sm text-muted-foreground">
+          If an account exists for that email, a reset link has been sent.
+        </p>
       ) : (
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm text-slate-600">Email</label>
-            <input
-              className="w-full rounded-md border border-slate-300 px-3 py-2"
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              className="mt-1"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="rounded-lg bg-blue-700 py-2.5 font-medium text-white hover:bg-blue-800 disabled:opacity-60"
-          >
+          <Button type="submit" variant="accent" className="w-full" disabled={loading}>
             {loading ? "Sending…" : "Send reset link"}
-          </button>
+          </Button>
         </form>
       )}
-      <p className="mt-4 text-center text-sm">
-        <Link href="/login" className="text-blue-700 hover:underline">
-          Back to sign in
-        </Link>
-      </p>
-    </div>
+    </AuthCard>
   );
 }

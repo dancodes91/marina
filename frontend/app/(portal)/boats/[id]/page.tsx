@@ -3,17 +3,26 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { StatusBadge } from "@/components/requests/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { apiFetch } from "@/lib/api";
-import type { Boat } from "@/types";
+import type { Boat, ServiceRequestSummary } from "@/types";
 
 export default function BoatDetailPage() {
   const params = useParams();
   const id = String(params.id);
   const [boat, setBoat] = useState<Boat | null>(null);
+  const [requests, setRequests] = useState<ServiceRequestSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [engineMake, setEngineMake] = useState("");
   const [engineModel, setEngineModel] = useState("");
   const [engineHours, setEngineHours] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     apiFetch<Boat>(`/api/v1/boats/${id}`)
@@ -24,9 +33,16 @@ export default function BoatDetailPage() {
         setEngineHours(b.engine_hours || "");
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Error"));
+
+    apiFetch<ServiceRequestSummary[]>("/api/v1/requests")
+      .then(setRequests)
+      .catch(() => {});
   }, [id]);
 
+  const history = requests;
+
   async function save() {
+    setSaving(true);
     try {
       const b = await apiFetch<Boat>(`/api/v1/boats/${id}`, {
         method: "PATCH",
@@ -39,56 +55,83 @@ export default function BoatDetailPage() {
       setBoat(b);
     } catch (e) {
       alert(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
     }
   }
 
-  if (error) return <p className="text-red-600">{error}</p>;
-  if (!boat) return <p className="text-slate-600">Loading…</p>;
+  if (error) return <p className="text-destructive">{error}</p>;
+  if (!boat) return <p className="text-muted-foreground">Loading…</p>;
+
+  const title = [boat.year, boat.make, boat.model].filter(Boolean).join(" ") || "Boat";
 
   return (
-    <div className="mx-auto max-w-xl">
-      <Link href="/dashboard" className="text-sm text-blue-700 hover:underline">
-        ← Dashboard
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold text-slate-900">
-        {boat.make || "Boat"} {boat.model || ""}
-      </h1>
-      <p className="text-sm text-slate-600">Stock: {boat.wallace_stock_id || "—"} · Slip: {boat.slip_id || "—"}</p>
-      <div className="mt-6 space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="font-medium text-slate-900">Engine (optional)</h2>
-        <div>
-          <label className="mb-1 block text-sm text-slate-600">Make</label>
-          <input
-            className="w-full rounded-md border border-slate-300 px-3 py-2"
-            value={engineMake}
-            onChange={(e) => setEngineMake(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-slate-600">Model</label>
-          <input
-            className="w-full rounded-md border border-slate-300 px-3 py-2"
-            value={engineModel}
-            onChange={(e) => setEngineModel(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-slate-600">Hours</label>
-          <input
-            type="number"
-            className="w-full rounded-md border border-slate-300 px-3 py-2"
-            value={engineHours}
-            onChange={(e) => setEngineHours(e.target.value)}
-          />
-        </div>
-        <button
-          type="button"
-          onClick={save}
-          className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
-        >
-          Save
-        </button>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div>
+        <Link href="/dashboard" className="text-sm text-accent hover:underline">
+          ← Dashboard
+        </Link>
+        <h1 className="mt-2 text-2xl font-bold text-primary">{title}</h1>
+        <p className="text-sm text-muted-foreground">
+          Stock: {boat.wallace_stock_id || "—"} · Slip: {boat.slip_id || "—"}
+        </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Engine details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="make">Make</Label>
+            <Input id="make" className="mt-1" value={engineMake} onChange={(e) => setEngineMake(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="model">Model</Label>
+            <Input id="model" className="mt-1" value={engineModel} onChange={(e) => setEngineModel(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="hours">Hours</Label>
+            <Input
+              id="hours"
+              type="number"
+              className="mt-1"
+              value={engineHours}
+              onChange={(e) => setEngineHours(e.target.value)}
+            />
+          </div>
+          <Button type="button" variant="accent" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save engine info"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Service history</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {history.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No service requests on file.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {history.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-3 first:pt-0">
+                  <div>
+                    <Link href={`/requests/${r.id}`} className="font-medium text-accent hover:underline">
+                      {r.request_number}
+                    </Link>
+                    <p className="text-sm text-muted-foreground">
+                      {r.form_type} · {new Date(r.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <StatusBadge status={r.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

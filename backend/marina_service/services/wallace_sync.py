@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from marina_service.config import get_settings
 from marina_service.models.boat import Boat
 from marina_service.models.customer import Customer
+from marina_service.models.marina import Marina
 from marina_service.models.mechanic import Mechanic
 from marina_service.models.sync_log import SyncLogLine, SyncRun
 
@@ -43,12 +44,34 @@ def _session_factory():
     return sessionmaker(bind=engine)
 
 
+def _get_default_marina_id(session: Session) -> uuid.UUID:
+    """Return first active marina id, or create the default marina row."""
+    marina = session.execute(
+        select(Marina).where(Marina.is_active.is_(True)).order_by(Marina.created_at.asc())
+    ).scalar_one_or_none()
+    if marina:
+        return marina.id
+    marina = Marina(
+        slug="rhode-river",
+        name="Rhode River Marina",
+        contact_email="service@rhoderivermarina.net",
+        contact_phone="(410) 555-0100",
+        timezone="America/New_York",
+        sync_interval_mins=15,
+        is_active=True,
+    )
+    session.add(marina)
+    session.flush()
+    return marina.id
+
+
 def run_sync() -> uuid.UUID:
     """Process all CSV files in WALLACE_EXPORT_DIR. Returns sync_run id."""
     settings = get_settings()
     export_dir = Path(settings.wallace_export_dir)
     SessionLocal = _session_factory()
     session = SessionLocal()
+    marina_id = _get_default_marina_id(session)
     run = SyncRun(
         started_at=datetime.now(timezone.utc),
         source="wallace_csv",
@@ -78,13 +101,13 @@ def run_sync() -> uuid.UUID:
             run.files_processed = len(files)
         for fp in files:
             if _is_mechanics_file(fp.name):
-                n = _import_mechanics_csv_path(session, fp)
+                n = _import_mechanics_csv_path(session, fp, marina_id)
                 run = session.get(SyncRun, run_id)
                 if run:
                     run.mechanics_upserted += n
                 log_line(f"Imported mechanics from {fp.name}: {n} rows")
             else:
-                c, b = _import_customers_boats_csv_path(session, fp)
+                c, b = _import_customers_boats_csv_path(session, fp, marina_id)
                 run = session.get(SyncRun, run_id)
                 if run:
                     run.customers_upserted += c
@@ -115,6 +138,7 @@ def run_sync_single_csv(*, filename: str, content_bytes: bytes) -> uuid.UUID:
     """Import one Wallace export CSV (uploaded from a remote Wallace desktop). Returns sync_run id."""
     SessionLocal = _session_factory()
     session = SessionLocal()
+    marina_id = _get_default_marina_id(session)
     run = SyncRun(
         started_at=datetime.now(timezone.utc),
         source="wallace_csv_upload",
@@ -132,13 +156,13 @@ def run_sync_single_csv(*, filename: str, content_bytes: bytes) -> uuid.UUID:
     try:
         stream = io.StringIO(content_bytes.decode("utf-8-sig", errors="replace"))
         if _is_mechanics_file(filename):
-            n = _import_mechanics_csv_stream(session, stream)
+            n = _import_mechanics_csv_stream(session, stream, marina_id)
             run = session.get(SyncRun, run_id)
             if run:
                 run.mechanics_upserted = (run.mechanics_upserted or 0) + n
             log_line(f"Imported mechanics from upload {filename}: {n} rows")
         else:
-            c, b = _import_customers_boats_csv_stream(session, stream)
+            c, b = _import_customers_boats_csv_stream(session, stream, marina_id)
             run = session.get(SyncRun, run_id)
             if run:
                 run.customers_upserted = (run.customers_upserted or 0) + c
@@ -169,12 +193,12 @@ def _is_mechanics_file(filename: str) -> bool:
     return "mechanic" in filename.lower()
 
 
-def _import_mechanics_csv_path(session: Session, path: Path) -> int:
+def _import_mechanics_csv_path(session: Session, path: Path, marina_id: uuid.UUID) -> int:
     with path.open(newline="", encoding="utf-8-sig") as f:
-        return _import_mechanics_csv_stream(session, f)
+        return _import_mechanics_csv_stream(session, f, marina_id)
 
 
-def _import_mechanics_csv_stream(session: Session, stream) -> int:
+def _import_mechanics_csv_stream(session: Session, stream, marina_id: uuid.UUID) -> int:
     count = 0
     reader = csv.DictReader(stream)
     if not reader.fieldnames:
@@ -189,7 +213,7 @@ def _import_mechanics_csv_stream(session: Session, stream) -> int:
             continue
         code_s = str(code).strip() if code else None
         name_s = str(name).strip()
-        q = select(Mechanic).where(Mechanic.name == name_s)
+        q = select(Mechanic).where(Mechanic.marina_id == marina_id, Mechanic.name == name_s)
         if code_s:
             q = q.where(Mechanic.wallace_mechanic_code == code_s)
         existing = session.execute(q).scalar_one_or_none()
@@ -200,6 +224,7 @@ def _import_mechanics_csv_stream(session: Session, stream) -> int:
         else:
             session.add(
                 Mechanic(
+                    marina_id=marina_id,
                     wallace_mechanic_code=code_s,
                     name=name_s,
                     is_active=True,
@@ -209,12 +234,12 @@ def _import_mechanics_csv_stream(session: Session, stream) -> int:
     return count
 
 
-def _import_customers_boats_csv_path(session: Session, path: Path) -> tuple[int, int]:
+def _import_customers_boats_csv_path(session: Session, path: Path, marina_id: uuid.UUID) -> tuple[int, int]:
     with path.open(newline="", encoding="utf-8-sig") as f:
-        return _import_customers_boats_csv_stream(session, f)
+        return _import_customers_boats_csv_stream(session, f, marina_id)
 
 
-def _import_customers_boats_csv_stream(session: Session, stream) -> tuple[int, int]:
+def _import_customers_boats_csv_stream(session: Session, stream, marina_id: uuid.UUID) -> tuple[int, int]:
     """Expected columns (flexible headers): Customer AR #, Customer Name, Alpha Key, Phone,
     Email (optional),
     Stock ID, Manufacture, LOA Ft, LOA In, Beam Ft, Beam In, Weight, Registration, Slip/Rack ID
@@ -258,7 +283,12 @@ def _import_customers_boats_csv_stream(session: Session, stream) -> tuple[int, i
             continue
         full_name = (row.get(c_name) if c_name else "") or ""
         first, last = _split_name(full_name)
-        cust = session.execute(select(Customer).where(Customer.wallace_customer_id == ar_num)).scalar_one_or_none()
+        cust = session.execute(
+            select(Customer).where(
+                Customer.marina_id == marina_id,
+                Customer.wallace_customer_id == ar_num,
+            )
+        ).scalar_one_or_none()
         if cust:
             if alpha and row.get(alpha):
                 cust.alpha_key = str(row.get(alpha)).strip()
@@ -275,6 +305,7 @@ def _import_customers_boats_csv_stream(session: Session, stream) -> tuple[int, i
             if email_col and row.get(email_col):
                 em = str(row.get(email_col)).strip().lower()
             cust = Customer(
+                marina_id=marina_id,
                 wallace_customer_id=ar_num,
                 email=em,
                 phone=str(row.get(phone)).strip() if phone and row.get(phone) else None,
@@ -327,6 +358,7 @@ def _import_customers_boats_csv_stream(session: Session, stream) -> tuple[int, i
         else:
             session.add(
                 Boat(
+                    marina_id=marina_id,
                     customer_id=cust.id,
                     wallace_stock_id=stock_s,
                     make=str(row.get(make)).strip() if make and row.get(make) else None,

@@ -7,13 +7,16 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from marina_service.database import Base
-from marina_service.models.enums import RequestStatus
+from marina_service.models.enums import FormType, PaymentStatus, RequestStatus
 
 
 class ServiceRequest(Base):
     __tablename__ = "service_requests"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    marina_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marinas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     request_number: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=False)
     customer_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("customers.id", ondelete="CASCADE"), nullable=False
@@ -21,11 +24,16 @@ class ServiceRequest(Base):
     boat_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("boats.id", ondelete="CASCADE"), nullable=False
     )
+    form_type: Mapped[FormType] = mapped_column(
+        SAEnum(FormType, name="form_type"), nullable=False, default=FormType.GENERAL
+    )
     status: Mapped[RequestStatus] = mapped_column(
         SAEnum(RequestStatus, name="request_status"), nullable=False, default=RequestStatus.SUBMITTED
     )
     category: Mapped[str | None] = mapped_column(String(100))
     description: Mapped[str | None] = mapped_column(Text)
+    custom_description: Mapped[str | None] = mapped_column(Text)
+    job_selections: Mapped[list | None] = mapped_column(JSONB, default=list)
     customer_notes: Mapped[str | None] = mapped_column(Text)
     manager_notes: Mapped[str | None] = mapped_column(Text)
     attachments: Mapped[list | None] = mapped_column(JSONB, default=list)
@@ -39,6 +47,10 @@ class ServiceRequest(Base):
     estimated_completion: Mapped[date | None] = mapped_column(Date)
     total_estimate_list: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     total_estimate_cost: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    invoice_amount: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+        SAEnum(PaymentStatus, name="payment_status"), nullable=False, default=PaymentStatus.UNPAID
+    )
     pricing_approved_by_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("staff_users.id", ondelete="SET NULL")
     )

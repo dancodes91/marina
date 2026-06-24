@@ -37,8 +37,8 @@ export function LaborLineEditor({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="mb-3 font-medium">Labor lines</h2>
+    <div>
+      <h2 className="mb-3 font-medium text-primary">Labor lines</h2>
       <div className="mb-4 flex flex-wrap gap-2">
         <select
           className="flex-1 min-w-[200px] rounded-md border border-slate-300 px-2 py-1 text-sm"

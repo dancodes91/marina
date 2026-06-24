@@ -2,8 +2,8 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, DateTime, Enum as SAEnum, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, DateTime, Enum as SAEnum, ForeignKey, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from marina_service.database import Base
@@ -14,6 +14,9 @@ class LaborCode(Base):
     __tablename__ = "labor_codes"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    marina_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("marinas.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     labor_code: Mapped[str] = mapped_column(String(20), index=True, nullable=False)
     job_first_line: Mapped[str | None] = mapped_column(String(200))
     job_description: Mapped[str | None] = mapped_column(Text)

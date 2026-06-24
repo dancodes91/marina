@@ -17,7 +17,12 @@ from marina_service.schemas.labor import (
     LaborLineOut,
     LaborLinePatch,
 )
-from marina_service.schemas.requests import ManagerRequestPatch, ServiceRequestManagerDetail, StatusPatch
+from marina_service.schemas.requests import (
+    ManagerRequestPatch,
+    ServiceRequestManagerDetail,
+    StatusPatch,
+    TimelineEventOut,
+)
 from marina_service.services.request_totals import recalculate_request_totals
 from marina_service.tasks.notification_tasks import notify_request_status_changed
 
@@ -32,10 +37,10 @@ async def _append_event(db: AsyncSession, request_id: UUID, st: RequestStatus, n
 async def get_manager_request(
     request_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> ServiceRequest:
     req = await db.get(ServiceRequest, request_id)
-    if not req:
+    if not req or req.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     return req
 
@@ -44,9 +49,13 @@ async def get_manager_request(
 async def list_manager_requests(
     status_filter: RequestStatus | None = Query(None, alias="status"),
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> list[ServiceRequest]:
-    q = select(ServiceRequest).order_by(ServiceRequest.created_at.desc())
+    q = (
+        select(ServiceRequest)
+        .where(ServiceRequest.marina_id == staff.marina_id)
+        .order_by(ServiceRequest.created_at.desc())
+    )
     if status_filter:
         q = q.where(ServiceRequest.status == status_filter)
     r = await db.execute(q)
@@ -59,10 +68,10 @@ async def patch_status(
     body: StatusPatch,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> ServiceRequest:
     req = await db.get(ServiceRequest, request_id)
-    if not req:
+    if not req or req.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     req.status = body.status
     await _append_event(db, req.id, body.status)
@@ -80,10 +89,10 @@ async def patch_request(
     request_id: UUID,
     body: ManagerRequestPatch,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> ServiceRequest:
     req = await db.get(ServiceRequest, request_id)
-    if not req:
+    if not req or req.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     data = body.model_dump(exclude_unset=True)
     for k, v in data.items():
@@ -91,12 +100,32 @@ async def patch_request(
     return req
 
 
+@router.get("/requests/{request_id}/timeline", response_model=list[TimelineEventOut])
+async def manager_timeline(
+    request_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    staff: StaffUser = Depends(get_manager_or_admin),
+) -> list[RequestStatusEvent]:
+    req = await db.get(ServiceRequest, request_id)
+    if not req or req.marina_id != staff.marina_id:
+        raise HTTPException(status_code=404, detail="Not found")
+    r = await db.execute(
+        select(RequestStatusEvent)
+        .where(RequestStatusEvent.request_id == request_id)
+        .order_by(RequestStatusEvent.created_at.asc())
+    )
+    return list(r.scalars().all())
+
+
 @router.get("/requests/{request_id}/labor", response_model=list[LaborLineOut])
 async def list_labor(
     request_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> list[RequestLaborLine]:
+    req = await db.get(ServiceRequest, request_id)
+    if not req or req.marina_id != staff.marina_id:
+        raise HTTPException(status_code=404, detail="Not found")
     r = await db.execute(
         select(RequestLaborLine).where(RequestLaborLine.request_id == request_id).order_by(RequestLaborLine.line_number)
     )
@@ -108,13 +137,13 @@ async def add_labor(
     request_id: UUID,
     body: LaborLineCreate,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> RequestLaborLine:
     req = await db.get(ServiceRequest, request_id)
-    if not req:
+    if not req or req.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     code = await db.get(LaborCode, body.labor_code_id)
-    if not code:
+    if not code or code.marina_id != staff.marina_id:
         raise HTTPException(status_code=400, detail="Invalid labor code")
     existing = (
         await db.execute(select(RequestLaborLine).where(RequestLaborLine.request_id == request_id))
@@ -145,8 +174,11 @@ async def patch_labor(
     line_id: UUID,
     body: LaborLinePatch,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> RequestLaborLine:
+    req = await db.get(ServiceRequest, request_id)
+    if not req or req.marina_id != staff.marina_id:
+        raise HTTPException(status_code=404, detail="Not found")
     line = await db.get(RequestLaborLine, line_id)
     if not line or line.request_id != request_id:
         raise HTTPException(status_code=404, detail="Not found")
@@ -162,8 +194,11 @@ async def delete_labor(
     request_id: UUID,
     line_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> dict:
+    req = await db.get(ServiceRequest, request_id)
+    if not req or req.marina_id != staff.marina_id:
+        raise HTTPException(status_code=404, detail="Not found")
     line = await db.get(RequestLaborLine, line_id)
     if not line or line.request_id != request_id:
         raise HTTPException(status_code=404, detail="Not found")
@@ -177,8 +212,11 @@ async def job_done(
     request_id: UUID,
     line_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> RequestLaborLine:
+    req = await db.get(ServiceRequest, request_id)
+    if not req or req.marina_id != staff.marina_id:
+        raise HTTPException(status_code=404, detail="Not found")
     line = await db.get(RequestLaborLine, line_id)
     if not line or line.request_id != request_id:
         raise HTTPException(status_code=404, detail="Not found")
@@ -191,10 +229,10 @@ async def job_done(
 async def estimate(
     request_id: UUID,
     db: AsyncSession = Depends(get_db),
-    _: StaffUser = Depends(get_manager_or_admin),
+    staff: StaffUser = Depends(get_manager_or_admin),
 ) -> EstimateOut:
     req = await db.get(ServiceRequest, request_id)
-    if not req:
+    if not req or req.marina_id != staff.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     r = await db.execute(
         select(RequestLaborLine).where(RequestLaborLine.request_id == request_id).order_by(RequestLaborLine.line_number)

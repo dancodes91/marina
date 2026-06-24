@@ -19,7 +19,9 @@ async def list_boats(
     customer: Customer = Depends(get_current_customer),
     db: AsyncSession = Depends(get_db),
 ) -> list[Boat]:
-    r = await db.execute(select(Boat).where(Boat.customer_id == customer.id))
+    r = await db.execute(
+        select(Boat).where(Boat.customer_id == customer.id, Boat.marina_id == customer.marina_id)
+    )
     return list(r.scalars().all())
 
 
@@ -30,7 +32,7 @@ async def get_boat(
     db: AsyncSession = Depends(get_db),
 ) -> Boat:
     boat = await db.get(Boat, boat_id)
-    if not boat or boat.customer_id != customer.id:
+    if not boat or boat.customer_id != customer.id or boat.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     return boat
 
@@ -43,7 +45,7 @@ async def patch_boat(
     db: AsyncSession = Depends(get_db),
 ) -> Boat:
     boat = await db.get(Boat, boat_id)
-    if not boat or boat.customer_id != customer.id:
+    if not boat or boat.customer_id != customer.id or boat.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     data = body.model_dump(exclude_unset=True)
     for k, v in data.items():
@@ -59,7 +61,7 @@ async def upload_boat_photo(
     db: AsyncSession = Depends(get_db),
 ) -> PresignUploadOut:
     boat = await db.get(Boat, boat_id)
-    if not boat or boat.customer_id != customer.id:
+    if not boat or boat.customer_id != customer.id or boat.marina_id != customer.marina_id:
         raise HTTPException(status_code=404, detail="Not found")
     key = new_attachment_key(f"boats/{boat_id}", body.filename)
     url = presigned_put_url(key, body.content_type)

@@ -2,20 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 210 20% 98%;
-  --foreground: 222 47% 11%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --primary: 221 83% 40%;
-  --primary-foreground: 210 40% 98%;
-  --muted: 210 20% 94%;
-  --muted-foreground: 215 16% 40%;
-  --border: 214 20% 88%;
-  --radius: 0.6rem;
+@layer base {
+  :root {
+    --background: 38 33% 94%;
+    --foreground: 220 45% 14%;
+    --card: 40 40% 98%;
+    --card-foreground: 220 45% 14%;
+    --popover: 40 40% 98%;
+    --popover-foreground: 220 45% 14%;
+    --primary: 215 65% 22%;
+    --primary-foreground: 38 30% 96%;
+    --secondary: 38 25% 88%;
+    --secondary-foreground: 220 40% 18%;
+    --muted: 38 22% 90%;
+    --muted-foreground: 220 12% 42%;
+    --accent: 175 55% 38%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 38 18% 82%;
+    --input: 38 18% 82%;
+    --ring: 175 55% 38%;
+    --radius: 0.5rem;
+    --chart-1: 215 65% 22%;
+    --chart-2: 175 55% 38%;
+    --chart-3: 38 45% 72%;
+    --chart-4: 200 50% 45%;
+    --chart-5: 160 40% 35%;
+    --marina-navy: 215 65% 22%;
+    --marina-teal: 175 55% 38%;
+    --marina-sand: 38 33% 94%;
+    --marina-wave: 195 55% 88%;
+  }
+
+  .dark {
+    --background: 220 45% 8%;
+    --foreground: 38 25% 92%;
+    --card: 220 40% 11%;
+    --card-foreground: 38 25% 92%;
+    --popover: 220 40% 11%;
+    --popover-foreground: 38 25% 92%;
+    --primary: 195 55% 55%;
+    --primary-foreground: 220 45% 8%;
+    --secondary: 220 30% 16%;
+    --secondary-foreground: 38 25% 92%;
+    --muted: 220 30% 16%;
+    --muted-foreground: 38 15% 65%;
+    --accent: 175 50% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 25% 18%;
+    --input: 220 25% 18%;
+    --ring: 175 50% 42%;
+    --chart-1: 195 55% 55%;
+    --chart-2: 175 50% 42%;
+    --chart-3: 38 35% 55%;
+    --chart-4: 200 45% 50%;
+    --chart-5: 160 35% 40%;
+  }
 }
 
-body {
-  color: hsl(var(--foreground));
-  background: hsl(var(--background));
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .marina-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--marina-navy)) 0%,
+      hsl(200 55% 28%) 50%,
+      hsl(var(--marina-teal)) 100%
+    );
+  }
+
+  .marina-text-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--marina-navy)),
+      hsl(var(--marina-teal))
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }

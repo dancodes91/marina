@@ -20,12 +20,41 @@ class RequestStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
 
 
+class FormType(str, enum.Enum):
+    WINTER = "WINTER"
+    SPRING = "SPRING"
+    GENERAL = "GENERAL"
+
+
+class PaymentStatus(str, enum.Enum):
+    UNPAID = "UNPAID"
+    PARTIAL = "PARTIAL"
+    PAID = "PAID"
+
+
 class RateType(str, enum.Enum):
     HOURLY = "HOURLY"
     FLAT = "FLAT"
     CHARGE_TIME = "CHARGE_TIME"
     FLAT_RATE = "FLAT_RATE"
     QUANTITY = "QUANTITY"
+
+
+class ReservationType(str, enum.Enum):
+    WET_SLIP = "WET_SLIP"
+    DRY_RACK = "DRY_RACK"
+    INDOOR_STORAGE = "INDOOR_STORAGE"
+    OUTDOOR_STORAGE = "OUTDOOR_STORAGE"
+    TRAILER = "TRAILER"
+    MOORING = "MOORING"
+
+
+class ReservationStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    ACTIVE = "ACTIVE"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
 
 
 class NotificationChannel(str, enum.Enum):

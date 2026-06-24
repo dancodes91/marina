@@ -1,13 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { DashboardHeader } from "@/components/layout/dashboard-header";
+import { SidebarProvider } from "@/hooks/use-sidebar";
 import { clearTokens, getAccessToken, isStaffToken } from "@/lib/auth";
 
 export default function ManagerLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -26,38 +28,21 @@ export default function ManagerLayout({ children }: { children: React.ReactNode 
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-600">Loading…</div>
+      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+        Loading…
+      </div>
     );
   }
 
-  const nav = [
-    { href: "/manager/requests", label: "Requests" },
-    { href: "/manager/labor-codes", label: "Labor codes" },
-    { href: "/manager/sync", label: "Wallace sync" },
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-slate-900 text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <span className="font-semibold">Service Manager</span>
-          <nav className="flex items-center gap-4 text-sm">
-            {nav.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                className={pathname?.startsWith(n.href) ? "font-medium text-white" : "text-slate-300 hover:text-white"}
-              >
-                {n.label}
-              </Link>
-            ))}
-            <button type="button" onClick={logout} className="text-slate-300 hover:text-white">
-              Sign out
-            </button>
-          </nav>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <AppSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <DashboardHeader onSignOut={logout} />
+          <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
         </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-    </div>
+      </div>
+    </SidebarProvider>
   );
 }
