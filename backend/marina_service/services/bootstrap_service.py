@@ -134,7 +134,11 @@ async def run_migrations() -> tuple[Literal["applied", "failed"], str | None]:
         await asyncio.to_thread(_run_alembic_upgrade)
         return "applied", None
     except Exception as exc:  # noqa: BLE001 — surface migration errors to caller
-        return "failed", str(exc)
+        msg = str(exc)
+        # Unwrap nested "transaction aborted" noise when possible
+        if "InFailedSQLTransactionError" in msg and exc.__cause__:
+            msg = f"{msg} | root: {exc.__cause__}"
+        return "failed", msg[:2000]
 
 
 async def seed_test_users(db: AsyncSession, marina_id: uuid.UUID) -> tuple[UserSeedResult, UserSeedResult]:

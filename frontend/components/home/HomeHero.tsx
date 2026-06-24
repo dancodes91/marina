@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -43,7 +44,7 @@ export function HomeHero() {
         <div className="space-y-6">
           <p
             data-hero="badge"
-            className="inline-flex rounded-full bg-accent/15 px-3 py-1 text-sm font-medium text-accent"
+            className="inline-flex rounded-full border border-accent/20 bg-white/70 px-3 py-1 text-sm font-medium text-accent shadow-sm backdrop-blur-sm"
           >
             Rhode River Marina · Service Portal
           </p>
@@ -65,7 +66,7 @@ export function HomeHero() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button asChild size="lg" variant="outline" className="border-primary/15 bg-white/60 backdrop-blur-sm">
               <Link href="/requests/new?form_type=WINTER">
                 <Calendar className="h-4 w-4" />
                 Start work order
@@ -78,35 +79,37 @@ export function HomeHero() {
               { value: "24h", label: "Typical review time" },
               { value: "100%", label: "Online tracking" },
             ].map((stat) => (
-              <div key={stat.label} data-hero="stat" className="text-center sm:text-left">
+              <div
+                key={stat.label}
+                data-hero="stat"
+                className="rounded-xl border border-white/50 bg-white/50 px-2 py-3 text-center shadow-sm backdrop-blur-sm sm:text-left"
+              >
                 <p className="text-2xl font-bold text-primary">{stat.value}</p>
                 <p className="text-xs text-muted-foreground sm:text-sm">{stat.label}</p>
               </div>
             ))}
           </div>
         </div>
+
         <div
           data-hero="image"
-          className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-primary/20 via-marina-wave/40 to-accent/20 shadow-xl"
+          className="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-white/60 bg-primary/5 shadow-2xl shadow-primary/10 ring-1 ring-primary/10"
         >
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center">
-            <div className="rounded-full bg-white/60 p-6 backdrop-blur-sm">
-              <svg viewBox="0 0 64 64" className="h-16 w-16 text-primary" aria-hidden="true">
-                <path
-                  fill="currentColor"
-                  d="M8 44 L32 20 L56 44 L48 44 L48 52 L16 52 L16 44 Z M28 36 L36 36 L36 48 L28 48 Z"
-                  opacity="0.3"
-                />
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  d="M4 48 Q32 28 60 48"
-                />
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-primary/80">Marina hero image placeholder</p>
-            <p className="text-xs text-muted-foreground">Replace with waterfront photography</p>
+          <Image
+            src="/wallace-office.webp"
+            alt="Rhode River Marina — Wallace service office"
+            fill
+            priority
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/55 via-primary/10 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-accent/20" />
+          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+            <p className="text-sm font-semibold text-white drop-shadow-md">Rhode River Marina</p>
+            <p className="mt-1 text-xs text-white/85 drop-shadow">
+              Full-service yard &amp; storage on the Rhode River
+            </p>
           </div>
         </div>
       </div>
