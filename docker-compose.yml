@@ -91,12 +91,16 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-        NEXT_PUBLIC_MARINA_SLUG: ${NEXT_PUBLIC_MARINA_SLUG:-rhode-river}
+        NEXT_PUBLIC_MARINA_SLUG: ${NEXT_PUBLIC_MARINA_SLUG:-your-dealership-name}
+        NEXT_PUBLIC_MARINA_NAME: ${NEXT_PUBLIC_MARINA_NAME:-Your Dealership Name}
+        NEXT_PUBLIC_MARINA_SUBTITLE: ${NEXT_PUBLIC_MARINA_SUBTITLE:-Service & storage portal}
     ports:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
-      NEXT_PUBLIC_MARINA_SLUG: ${NEXT_PUBLIC_MARINA_SLUG:-rhode-river}
+      NEXT_PUBLIC_MARINA_SLUG: ${NEXT_PUBLIC_MARINA_SLUG:-your-dealership-name}
+      NEXT_PUBLIC_MARINA_NAME: ${NEXT_PUBLIC_MARINA_NAME:-Your Dealership Name}
+      NEXT_PUBLIC_MARINA_SUBTITLE: ${NEXT_PUBLIC_MARINA_SUBTITLE:-Service & storage portal}
     depends_on:
       - api
 

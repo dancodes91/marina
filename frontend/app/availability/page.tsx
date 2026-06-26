@@ -6,6 +6,7 @@ import Link from "next/link";
 import { SlipGrid } from "@/components/availability/SlipGrid";
 import { StorageList } from "@/components/availability/StorageList";
 import { MarketingHeader } from "@/components/layout/marketing-header";
+import { marinaConfig } from "@/lib/marina";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiFetch } from "@/lib/api";
@@ -34,7 +35,7 @@ export default function AvailabilityPage() {
     <div className="min-h-screen bg-background">
       <MarketingHeader
         title="Slips & Storage"
-        subtitle="Rhode River Marina"
+        subtitle={marinaConfig.name}
         guestCta={{ href: "/reservations/new", label: "Request reservation →" }}
       />
 
@@ -45,7 +46,7 @@ export default function AvailabilityPage() {
             Wet slips & <span className="marina-text-gradient">storage</span>
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Current options at Rhode River Marina. Sign in to submit a reservation request.
+            Current options at {marinaConfig.name}. Sign in to submit a reservation request.
           </p>
           <Link
             href="/reservations/new"

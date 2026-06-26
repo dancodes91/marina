@@ -6,6 +6,8 @@ Revises: 001
 
 from typing import Sequence, Union
 
+import os
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
@@ -16,6 +18,10 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 DEFAULT_MARINA_ID = "00000000-0000-4000-8000-000000000001"
+DEFAULT_MARINA_NAME = os.environ.get("DEFAULT_MARINA_NAME", "Your Dealership Name")
+DEFAULT_MARINA_SLUG = os.environ.get("DEFAULT_MARINA_SLUG", "your-dealership-name")
+DEFAULT_MARINA_CONTACT_EMAIL = os.environ.get("DEFAULT_MARINA_CONTACT_EMAIL", "service@example.com")
+DEFAULT_MARINA_CONTACT_PHONE = os.environ.get("DEFAULT_MARINA_CONTACT_PHONE", "(410) 555-0100")
 
 
 def _insp():
@@ -84,12 +90,17 @@ def upgrade() -> None:
                 sa.text(
                     """
                     INSERT INTO marinas (id, name, slug, contact_email, contact_phone, is_active)
-                    VALUES (:id, 'Rhode River Marina', 'rhode-river',
-                            'service@rhoderivermarina.net', '(410) 555-0100', true)
+                    VALUES (:id, :name, :slug, :email, :phone, true)
                     ON CONFLICT (slug) DO NOTHING
                     """
                 ),
-                {"id": DEFAULT_MARINA_ID},
+                {
+                    "id": DEFAULT_MARINA_ID,
+                    "name": DEFAULT_MARINA_NAME,
+                    "slug": DEFAULT_MARINA_SLUG,
+                    "email": DEFAULT_MARINA_CONTACT_EMAIL,
+                    "phone": DEFAULT_MARINA_CONTACT_PHONE,
+                },
             )
         return
 
@@ -131,12 +142,17 @@ def upgrade() -> None:
         sa.text(
             """
             INSERT INTO marinas (id, name, slug, contact_email, contact_phone, is_active)
-            VALUES (:id, 'Rhode River Marina', 'rhode-river',
-                    'service@rhoderivermarina.net', '(410) 555-0100', true)
+            VALUES (:id, :name, :slug, :email, :phone, true)
             ON CONFLICT (slug) DO NOTHING
             """
         ),
-        {"id": DEFAULT_MARINA_ID},
+        {
+            "id": DEFAULT_MARINA_ID,
+            "name": DEFAULT_MARINA_NAME,
+            "slug": DEFAULT_MARINA_SLUG,
+            "email": DEFAULT_MARINA_CONTACT_EMAIL,
+            "phone": DEFAULT_MARINA_CONTACT_PHONE,
+        },
     )
 
     if not _table_exists("marina_availability"):

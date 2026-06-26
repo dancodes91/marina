@@ -46,16 +46,22 @@ def _session_factory():
 
 def _get_default_marina_id(session: Session) -> uuid.UUID:
     """Return first active marina id, or create the default marina row."""
+    settings = get_settings()
+    marina = session.execute(
+        select(Marina).where(Marina.slug == settings.default_marina_slug, Marina.is_active.is_(True))
+    ).scalar_one_or_none()
+    if marina:
+        return marina.id
     marina = session.execute(
         select(Marina).where(Marina.is_active.is_(True)).order_by(Marina.created_at.asc())
     ).scalar_one_or_none()
     if marina:
         return marina.id
     marina = Marina(
-        slug="rhode-river",
-        name="Rhode River Marina",
-        contact_email="service@rhoderivermarina.net",
-        contact_phone="(410) 555-0100",
+        slug=settings.default_marina_slug,
+        name=settings.default_marina_name,
+        contact_email=settings.default_marina_contact_email,
+        contact_phone=settings.default_marina_contact_phone,
         timezone="America/New_York",
         sync_interval_mins=15,
         is_active=True,

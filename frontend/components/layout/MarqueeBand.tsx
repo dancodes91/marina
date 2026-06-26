@@ -1,5 +1,7 @@
 "use client";
 
+import { marinaConfig } from "@/lib/marina";
+
 const PHRASES = [
   "Winterization",
   "Spring commissioning",
@@ -7,7 +9,7 @@ const PHRASES = [
   "Dry rack storage",
   "Online estimates",
   "Track your request",
-  "Rhode River Marina",
+  marinaConfig.name,
 ];
 
 export function MarqueeBand() {

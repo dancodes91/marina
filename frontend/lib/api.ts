@@ -1,9 +1,10 @@
+import { marinaConfig } from "./marina";
 import { clearTokens, getAccessToken, getApiBase, getRefreshToken, setTokens } from "./auth";
 import { notifyAuthChanged } from "@/hooks/use-auth-session";
 
 export type ApiError = { detail?: string | string[] };
 
-const MARINA_SLUG = process.env.NEXT_PUBLIC_MARINA_SLUG ?? "rhode-river";
+const MARINA_SLUG = marinaConfig.slug;
 
 async function refreshAccess(): Promise<string | null> {
   const rt = getRefreshToken();

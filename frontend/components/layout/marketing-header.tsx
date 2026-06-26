@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { SiteHeader, type NavItem } from "@/components/layout/SiteHeader";
 import { notifyAuthChanged, useAuthSession } from "@/hooks/use-auth-session";
+import { marinaConfig } from "@/lib/marina";
 import { clearTokens } from "@/lib/auth";
 
 interface MarketingHeaderProps {
@@ -14,8 +15,8 @@ interface MarketingHeaderProps {
 }
 
 export function MarketingHeader({
-  title = "Rhode River Marina",
-  subtitle = "Service & storage on the Rhode River",
+  title = marinaConfig.name,
+  subtitle = marinaConfig.subtitle,
   guestCta,
 }: MarketingHeaderProps) {
   const router = useRouter();

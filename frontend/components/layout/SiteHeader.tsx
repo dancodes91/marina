@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import type { AuthSession } from "@/lib/auth";
+import { marinaConfig } from "@/lib/marina";
 import { cn } from "@/lib/utils";
 
 export type NavItem = { href: string; label: string };
@@ -77,7 +78,7 @@ function NavLinks({
 }
 
 export function SiteHeader({
-  title = "Rhode River Marina",
+  title = marinaConfig.name,
   subtitle,
   items = DEFAULT_NAV,
   cta = { href: "/requests/new?form_type=GENERAL", label: "Start work order →" },

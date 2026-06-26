@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { marinaConfig } from "@/lib/marina";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Rhode River Marina · Service Portal",
+  title: `${marinaConfig.name} · Service Portal`,
   description: "Seasonal work orders, slip storage, and service tracking",
   manifest: "/manifest.webmanifest",
 };

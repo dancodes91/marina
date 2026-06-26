@@ -14,6 +14,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { marinaConfig } from "@/lib/marina";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
 
@@ -107,7 +108,7 @@ export function AppSidebar() {
             collapsed && "px-2 text-center"
           )}
         >
-          {collapsed ? "⚓" : "Rhode River Marina"}
+          {collapsed ? "⚓" : marinaConfig.name}
         </div>
       </div>
     </div>

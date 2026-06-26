@@ -7,7 +7,7 @@ Multi-tenant customer-facing marina portal: seasonal work orders, slip/storage r
 - **Marketing site** — GSAP landing page, slip/storage availability browse
 - **Customer portal** — 4-step work order wizard (Winter/Spring/General), dashboard, reservations, payment stub
 - **Manager dashboard** — Shadcn sidebar UI: requests, labor lines, reservations, sync, notifications
-- **Multi-tenant** — `Marina` model; API scoped via `X-Marina-Slug` header (default `rhode-river`)
+- **Multi-tenant** — `Marina` model; API scoped via `X-Marina-Slug` header (default `your-dealership-name`)
 - **Wallace sync** — CSV folder watch, upload API, Celery beat (15 min)
 
 ## Prerequisites
@@ -23,7 +23,7 @@ Multi-tenant customer-facing marina portal: seasonal work orders, slip/storage r
    cp .env.example .env
    ```
 
-   Set `JWT_SECRET_KEY`, `NEXT_PUBLIC_MARINA_SLUG=rhode-river`, and optionally SendGrid/Twilio keys.
+   Set `JWT_SECRET_KEY`, marina branding (`DEFAULT_MARINA_*` / `NEXT_PUBLIC_MARINA_*`), and optionally SendGrid/Twilio keys.
 
 2. Build and run:
 
@@ -73,7 +73,9 @@ Set at minimum:
 | `BOOTSTRAP_API_KEY` | Secret key for the setup URL below |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Manager login to seed |
 | `TEST_CUSTOMER_EMAIL` / `TEST_CUSTOMER_PASSWORD` | Customer login to seed (includes a test boat) |
-| `DEFAULT_MARINA_SLUG` / `NEXT_PUBLIC_MARINA_SLUG` | Tenant slug (`rhode-river`) |
+| `DEFAULT_MARINA_SLUG` / `NEXT_PUBLIC_MARINA_SLUG` | Tenant slug (`your-dealership-name`) |
+| `DEFAULT_MARINA_NAME` / `NEXT_PUBLIC_MARINA_NAME` | Display name (`Your Dealership Name`) |
+| `NEXT_PUBLIC_MARINA_SUBTITLE` | Optional tagline under the name in the header |
 | `GRAVITY_STUB_MODE` | `true` until real Gravity API is wired |
 | `WALLACE_UPLOAD_API_KEY` | For CSV upload from Wallace desktop |
 

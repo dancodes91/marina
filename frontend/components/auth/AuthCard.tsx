@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Anchor } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { marinaConfig } from "@/lib/marina";
 import { cn } from "@/lib/utils";
 
 interface AuthCardProps {
@@ -24,7 +25,7 @@ export function AuthCard({ title, description, children, footer, className }: Au
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/8 text-primary ring-1 ring-border/50">
             <Anchor className="h-5 w-5" aria-hidden />
           </span>
-          <span className="text-lg font-bold tracking-tight">Rhode River Marina</span>
+          <span className="text-lg font-bold tracking-tight">{marinaConfig.name}</span>
         </Link>
         <Card className="border-border/50 bg-card/95 shadow-xl shadow-primary/5 backdrop-blur-sm">
           <CardHeader className="space-y-2 text-center">

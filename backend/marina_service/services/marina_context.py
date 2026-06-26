@@ -7,6 +7,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from marina_service.config import get_settings
 from marina_service.models.marina import Marina, MarinaAvailability
 
 DEFAULT_SLIPS = [
@@ -31,11 +32,17 @@ async def get_marina_by_slug(db: AsyncSession, slug: str) -> Marina | None:
 async def ensure_marina(
     db: AsyncSession,
     *,
-    slug: str = "rhode-river",
-    name: str = "Rhode River Marina",
+    slug: str | None = None,
+    name: str | None = None,
     contact_email: str | None = None,
     contact_phone: str | None = None,
 ) -> Marina:
+    settings = get_settings()
+    slug = slug or settings.default_marina_slug
+    name = name or settings.default_marina_name
+    contact_email = contact_email or settings.default_marina_contact_email
+    contact_phone = contact_phone or settings.default_marina_contact_phone
+
     existing = await get_marina_by_slug(db, slug)
     if existing:
         return existing
@@ -43,8 +50,8 @@ async def ensure_marina(
     marina = Marina(
         slug=slug,
         name=name,
-        contact_email=contact_email or "service@rhoderivermarina.net",
-        contact_phone=contact_phone or "(410) 555-0100",
+        contact_email=contact_email,
+        contact_phone=contact_phone,
         timezone="America/New_York",
         sync_interval_mins=15,
         is_active=True,

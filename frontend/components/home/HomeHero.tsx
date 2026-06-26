@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { marinaConfig } from "@/lib/marina";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -84,7 +85,7 @@ export function HomeHero() {
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
         <div className="space-y-8">
           <p data-hero="label" className="section-label">
-            Rhode River · Est. service portal
+            {marinaConfig.name} · Service portal
           </p>
 
           <h1 className="space-y-1 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-[3.5rem] lg:leading-[1.08]">
@@ -140,7 +141,7 @@ export function HomeHero() {
           >
             <Image
               src="/wallace-office.webp"
-              alt="Rhode River Marina office and waterfront"
+              alt={`${marinaConfig.name} office and waterfront`}
               fill
               className="object-cover"
               priority
@@ -148,7 +149,7 @@ export function HomeHero() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-marina-ink/50 via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-              <p className="text-sm font-medium text-white/90">Rhode River Marina</p>
+              <p className="text-sm font-medium text-white/90">{marinaConfig.name}</p>
               <p className="text-xs text-white/70">Service, storage & slip management</p>
             </div>
           </div>
