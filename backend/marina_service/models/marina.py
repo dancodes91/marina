@@ -24,6 +24,8 @@ class Marina(Base):
     sync_interval_mins: Mapped[int] = mapped_column(Integer, default=15)
     timezone: Mapped[str] = mapped_column(String(50), default="America/New_York")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    landing_hero_label: Mapped[str | None] = mapped_column(String(200))
+    landing_hero_title: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow

@@ -1,4 +1,4 @@
-"""Filesystem storage for marina landing carousel images (no database)."""
+"""Filesystem storage for marina landing carousel images."""
 
 from __future__ import annotations
 
