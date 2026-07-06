@@ -13,6 +13,7 @@ from marina_service.models import (  # noqa: F401
     ClaimToken,
     Customer,
     LaborCode,
+    LandingGalleryImage,
     Marina,
     MarinaAvailability,
     Mechanic,

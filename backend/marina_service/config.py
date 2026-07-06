@@ -35,7 +35,10 @@ class Settings(BaseSettings):
 
     public_app_url: str = Field(default="http://localhost:3000", alias="PUBLIC_APP_URL")
     api_public_url: str = Field(default="http://localhost:8000", alias="API_PUBLIC_URL")
-    cors_origins: str = Field(default="http://localhost:3000", alias="CORS_ORIGINS")
+    cors_origins: str = Field(
+        default="http://localhost:3000,http://127.0.0.1:3000",
+        alias="CORS_ORIGINS",
+    )
 
     sendgrid_api_key: str = Field(default="", alias="SENDGRID_API_KEY")
     sendgrid_from_email: str = Field(default="noreply@example.com", alias="SENDGRID_FROM_EMAIL")
@@ -66,6 +69,12 @@ class Settings(BaseSettings):
     )
     gravity_stub_mode: bool = Field(default=True, alias="GRAVITY_STUB_MODE")
     gravity_webhook_secret: str = Field(default="change-me-webhook", alias="GRAVITY_WEBHOOK_SECRET")
+    default_landing_image_url: str = Field(
+        default="/landing-default.webp", alias="DEFAULT_LANDING_IMAGE_URL"
+    )
+    landing_gallery_dir: str = Field(
+        default="data/landing-gallery", alias="LANDING_GALLERY_DIR"
+    )
 
     @property
     def database_url_sync(self) -> str:
@@ -76,7 +85,30 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        origins: list[str] = []
+        seen: set[str] = set()
+
+        def add(origin: str | None) -> None:
+            if not origin:
+                return
+            normalized = origin.rstrip("/")
+            if normalized not in seen:
+                seen.add(normalized)
+                origins.append(normalized)
+
+        for part in self.cors_origins.split(","):
+            add(part.strip())
+
+        add(self.public_app_url.rstrip("/"))
+
+        # localhost and 127.0.0.1 are different browser origins — allow both in local dev.
+        for origin in list(origins):
+            if "localhost" in origin:
+                add(origin.replace("localhost", "127.0.0.1"))
+            elif "127.0.0.1" in origin:
+                add(origin.replace("127.0.0.1", "localhost"))
+
+        return origins
 
 
 @lru_cache

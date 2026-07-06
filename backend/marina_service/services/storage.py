@@ -19,6 +19,43 @@ def _client():
     )
 
 
+def _cors_origins() -> list[str]:
+    settings = get_settings()
+    origins = list(settings.cors_origin_list)
+    for origin in (
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        settings.public_app_url.rstrip("/"),
+    ):
+        if origin and origin not in origins:
+            origins.append(origin)
+    return origins
+
+
+def ensure_bucket_cors() -> None:
+    """Allow browser PUT/GET to MinIO from the frontend origin."""
+    s = get_settings()
+    c = _client()
+    try:
+        c.put_bucket_cors(
+            Bucket=s.s3_bucket,
+            CORSConfiguration={
+                "CORSRules": [
+                    {
+                        "AllowedHeaders": ["*"],
+                        "AllowedMethods": ["GET", "PUT", "POST", "HEAD", "DELETE"],
+                        "AllowedOrigins": _cors_origins(),
+                        "ExposeHeaders": ["ETag", "Content-Length", "Content-Type"],
+                        "MaxAgeSeconds": 3600,
+                    }
+                ]
+            },
+        )
+    except Exception:
+        # Bucket may not exist yet; ensure_bucket_exists will create it first.
+        pass
+
+
 def ensure_bucket_exists() -> None:
     s = get_settings()
     c = _client()
@@ -26,6 +63,18 @@ def ensure_bucket_exists() -> None:
         c.head_bucket(Bucket=s.s3_bucket)
     except Exception:
         c.create_bucket(Bucket=s.s3_bucket)
+    ensure_bucket_cors()
+
+
+def put_object(key: str, body: bytes, content_type: str) -> None:
+    s = get_settings()
+    ensure_bucket_exists()
+    _client().put_object(
+        Bucket=s.s3_bucket,
+        Key=key,
+        Body=body,
+        ContentType=content_type,
+    )
 
 
 def presigned_put_url(key: str, content_type: str, expires_in: int = 3600) -> str:

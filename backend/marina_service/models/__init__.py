@@ -2,6 +2,7 @@ from marina_service.database import Base
 from marina_service.models.boat import Boat
 from marina_service.models.customer import Customer
 from marina_service.models.labor_code import LaborCode
+from marina_service.models.landing_gallery_image import LandingGalleryImage
 from marina_service.models.marina import Marina, MarinaAvailability
 from marina_service.models.mechanic import Mechanic
 from marina_service.models.notification_log import NotificationLog
@@ -22,6 +23,7 @@ __all__ = [
     "Boat",
     "Mechanic",
     "LaborCode",
+    "LandingGalleryImage",
     "ServiceRequest",
     "RequestStatusEvent",
     "RequestLaborLine",
