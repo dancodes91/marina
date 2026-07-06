@@ -213,3 +213,50 @@ export const RESERVATION_STATUSES: ReservationStatus[] = [
 ];
 
 export const RATE_TYPES: RateType[] = ["HOURLY", "FLAT", "CHARGE_TIME", "FLAT_RATE", "QUANTITY"];
+
+export type PresignUploadOut = {
+  upload_url: string;
+  key: string;
+  public_url: string;
+};
+
+export type LandingGallerySlide = {
+  id: string | null;
+  url: string;
+  alt_text: string | null;
+};
+
+export type LandingGalleryResponse = {
+  slides: LandingGallerySlide[];
+  default_url: string;
+  using_fallback: boolean;
+  total_count?: number;
+  hero_label?: string;
+  hero_title?: string;
+};
+
+export type LandingGalleryImage = {
+  id: string;
+  filename: string;
+  url: string;
+  alt_text: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type LandingGalleryStats = {
+  active_count: number;
+  total_count: number;
+};
+
+export type LandingHero = {
+  label: string;
+  title: string;
+};
+
+export type LandingGalleryManageResponse = {
+  images: LandingGalleryImage[];
+  stats: LandingGalleryStats;
+  hero: LandingHero;
+};

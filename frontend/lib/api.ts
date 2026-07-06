@@ -77,14 +77,14 @@ export async function apiUpload<T>(
   const headers = new Headers();
   headers.set("X-Marina-Slug", MARINA_SLUG);
   if (auth) headers.set("Authorization", `Bearer ${auth}`);
-  let res = await fetch(`${getApiBase()}${path}`, { method, headers, body: formData });
+
+  const res = await fetch(`${getApiBase()}${path}`, { method, headers, body: formData });
+
   if (res.status === 401 && auth) {
-    const newTok = await refreshAccess();
-    if (newTok) {
-      headers.set("Authorization", `Bearer ${newTok}`);
-      res = await fetch(`${getApiBase()}${path}`, { method, headers, body: formData });
-    }
+    clearTokens();
+    throw new Error("Session expired. Please sign in again and retry the upload.");
   }
+
   if (!res.ok) {
     let err: ApiError = {};
     try {

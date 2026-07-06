@@ -12,7 +12,11 @@ export type AuthSession = {
 };
 
 export function getApiBase(): string {
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  // Browser: same-origin proxy via Next.js rewrites — avoids CORS entirely.
+  if (typeof window !== "undefined") {
+    return "";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 }
 
 export function getAccessToken(): string | null {

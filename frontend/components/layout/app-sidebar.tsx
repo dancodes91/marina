@@ -7,6 +7,7 @@ import {
   Bell,
   ChevronLeft,
   ClipboardList,
+  Image as ImageIcon,
   LayoutDashboard,
   RefreshCw,
   Wrench,
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/manager/requests", label: "Requests", icon: ClipboardList },
   { href: "/manager/reservations", label: "Reservations", icon: Anchor },
   { href: "/manager/labor-codes", label: "Labor Codes", icon: Wrench },
+  { href: "/manager/landing-gallery", label: "Landing Gallery", icon: ImageIcon },
   { href: "/manager/sync", label: "Wallace Sync", icon: RefreshCw },
   { href: "/manager/notifications", label: "Notifications", icon: Bell },
 ] as const;

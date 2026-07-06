@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { HomeCarousel } from "@/components/home/HomeCarousel";
 import { HomeHero } from "@/components/home/HomeHero";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { ServicesSection } from "@/components/home/ServicesSection";
@@ -12,6 +13,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <MarketingHeader />
+
+      <HomeCarousel />
 
       <HomeHero />
 
