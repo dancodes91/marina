@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { SiteHeader, type NavItem } from "@/components/layout/SiteHeader";
 import { notifyAuthChanged, useAuthSession } from "@/hooks/use-auth-session";
-import { marinaConfig } from "@/lib/marina";
+import { useMarinaBranding } from "@/hooks/use-marina-branding";
 import { clearTokens } from "@/lib/auth";
 
 interface MarketingHeaderProps {
@@ -15,12 +15,15 @@ interface MarketingHeaderProps {
 }
 
 export function MarketingHeader({
-  title = marinaConfig.name,
-  subtitle = marinaConfig.subtitle,
+  title,
+  subtitle,
   guestCta,
 }: MarketingHeaderProps) {
   const router = useRouter();
   const session = useAuthSession();
+  const branding = useMarinaBranding();
+  const headerTitle = title ?? branding.name;
+  const headerSubtitle = subtitle ?? branding.subtitle;
 
   let items: NavItem[];
   let cta: { href: string; label: string } | undefined;
@@ -55,8 +58,8 @@ export function MarketingHeader({
 
   return (
     <SiteHeader
-      title={title}
-      subtitle={subtitle}
+      title={headerTitle}
+      subtitle={headerSubtitle}
       items={items}
       cta={cta}
       session={session}

@@ -1,19 +1,23 @@
 "use client";
 
-import { marinaConfig } from "@/lib/marina";
+import { useMemo } from "react";
 
-const PHRASES = [
-  "Winterization",
-  "Spring commissioning",
-  "Slip rentals",
-  "Dry rack storage",
-  "Online estimates",
-  "Track your request",
-  marinaConfig.name,
-];
+import { useMarinaBranding } from "@/hooks/use-marina-branding";
 
 export function MarqueeBand() {
-  const text = PHRASES.join(" · ");
+  const { name } = useMarinaBranding();
+  const text = useMemo(() => {
+    const phrases = [
+      "Winterization",
+      "Spring commissioning",
+      "Slip rentals",
+      "Dry rack storage",
+      "Online estimates",
+      "Track your request",
+      name,
+    ];
+    return phrases.join(" · ");
+  }, [name]);
   return (
     <div className="overflow-hidden border-y border-border/60 bg-primary py-3 text-primary-foreground">
       <div className="flex animate-marquee whitespace-nowrap">

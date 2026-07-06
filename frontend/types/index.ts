@@ -260,3 +260,22 @@ export type LandingGalleryManageResponse = {
   stats: LandingGalleryStats;
   hero: LandingHero;
 };
+
+export type MarinaSettings = {
+  name: string;
+  slug: string;
+  subtitle: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  twilio_from_number: string | null;
+  sync_interval_mins: number;
+};
+
+export type MarinaSettingsInput = {
+  name: string;
+  subtitle: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  twilio_from_number: string | null;
+  sync_interval_mins: number;
+};

@@ -10,6 +10,7 @@ from marina_service.routers import (
     labor_codes,
     landing_gallery,
     manager,
+    marina_settings,
     notifications,
     payments,
     requests,
@@ -52,6 +53,8 @@ app.include_router(manager.router, prefix=api_prefix)
 app.include_router(labor_codes.router, prefix=api_prefix)
 app.include_router(landing_gallery.public_router, prefix=api_prefix)
 app.include_router(landing_gallery.manager_router, prefix=api_prefix)
+app.include_router(marina_settings.router, prefix=api_prefix)
+app.include_router(marina_settings.public_router, prefix=api_prefix)
 app.include_router(notifications.router, prefix=api_prefix)
 app.include_router(sync.router, prefix=api_prefix)
 app.include_router(wallace_exports.router, prefix=api_prefix)

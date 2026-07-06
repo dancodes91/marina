@@ -10,12 +10,13 @@ import {
   Image as ImageIcon,
   LayoutDashboard,
   RefreshCw,
+  Settings,
   Wrench,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { marinaConfig } from "@/lib/marina";
+import { useMarinaBranding } from "@/hooks/use-marina-branding";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
 
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/manager/reservations", label: "Reservations", icon: Anchor },
   { href: "/manager/labor-codes", label: "Labor Codes", icon: Wrench },
   { href: "/manager/landing-gallery", label: "Landing Gallery", icon: ImageIcon },
+  { href: "/manager/settings", label: "Settings", icon: Settings },
   { href: "/manager/sync", label: "Wallace Sync", icon: RefreshCw },
   { href: "/manager/notifications", label: "Notifications", icon: Bell },
 ] as const;
@@ -77,6 +79,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
 
 export function AppSidebar() {
   const { collapsed, toggle, mobileOpen, setMobileOpen } = useSidebar();
+  const { name: marinaName } = useMarinaBranding();
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
@@ -110,7 +113,7 @@ export function AppSidebar() {
             collapsed && "px-2 text-center"
           )}
         >
-          {collapsed ? "⚓" : marinaConfig.name}
+          {collapsed ? "⚓" : marinaName}
         </div>
       </div>
     </div>

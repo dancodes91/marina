@@ -6,7 +6,7 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { ServicesSection } from "@/components/home/ServicesSection";
 import { MarqueeBand } from "@/components/layout/MarqueeBand";
 import { MarketingHeader } from "@/components/layout/marketing-header";
-import { marinaConfig } from "@/lib/marina";
+import { MarinaFooterText } from "@/components/branding/MarinaFooterText";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
@@ -56,7 +56,7 @@ export default function HomePage() {
 
       <footer className="border-t border-border/60 bg-card py-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-center text-sm text-muted-foreground sm:flex-row sm:px-6 sm:text-left">
-          <p>© {new Date().getFullYear()} {marinaConfig.name} · Service Portal</p>
+          <p><MarinaFooterText /></p>
           <div className="flex gap-6">
             <Link href="/availability" className="transition-colors hover:text-foreground">
               Availability

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
-import { marinaConfig } from "@/lib/marina";
+import { useMarinaBranding } from "@/hooks/use-marina-branding";
 import { cn } from "@/lib/utils";
 import type { LandingGalleryResponse } from "@/types";
 
@@ -24,12 +24,13 @@ function isRemoteUrl(url: string) {
 }
 
 export function HomeCarousel() {
+  const { name, subtitle } = useMarinaBranding();
   const [gallery, setGallery] = useState<LandingGalleryResponse>({
     slides: [{ id: null, url: DEFAULT_SLIDE, alt_text: "Marina waterfront" }],
     default_url: DEFAULT_SLIDE,
     using_fallback: true,
-    hero_label: marinaConfig.name,
-    hero_title: marinaConfig.subtitle,
+    hero_label: name,
+    hero_title: subtitle,
   });
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -50,8 +51,8 @@ export function HomeCarousel() {
     [slideCount]
   );
 
-  const heroLabel = gallery.hero_label ?? marinaConfig.name;
-  const heroTitle = gallery.hero_title ?? marinaConfig.subtitle;
+  const heroLabel = gallery.hero_label ?? name;
+  const heroTitle = gallery.hero_title ?? subtitle;
 
   useEffect(() => {
     apiFetch<LandingGalleryResponse>("/api/v1/landing-gallery", { token: null })
@@ -61,8 +62,8 @@ export function HomeCarousel() {
             slides: [{ id: null, url: resolveSlideUrl(data.default_url), alt_text: "Marina waterfront" }],
             default_url: resolveSlideUrl(data.default_url),
             using_fallback: true,
-            hero_label: data.hero_label ?? marinaConfig.name,
-            hero_title: data.hero_title ?? marinaConfig.subtitle,
+            hero_label: data.hero_label ?? name,
+            hero_title: data.hero_title ?? subtitle,
           });
           return;
         }
@@ -73,11 +74,11 @@ export function HomeCarousel() {
           slides: [{ id: null, url: DEFAULT_SLIDE, alt_text: "Marina waterfront" }],
           default_url: DEFAULT_SLIDE,
           using_fallback: true,
-          hero_label: marinaConfig.name,
-          hero_title: marinaConfig.subtitle,
+          hero_label: name,
+          hero_title: subtitle,
         });
       });
-  }, []);
+  }, [name, subtitle]);
 
   useEffect(() => {
     setIndex(0);
@@ -119,7 +120,7 @@ export function HomeCarousel() {
           >
             <Image
               src={slide.url}
-              alt={slide.alt_text ?? `${marinaConfig.name} marina`}
+              alt={slide.alt_text ?? `${name} marina`}
               fill
               className="object-cover"
               priority={i === 0}

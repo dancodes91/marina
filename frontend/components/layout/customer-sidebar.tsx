@@ -13,7 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { marinaConfig } from "@/lib/marina";
+import { useMarinaBranding } from "@/hooks/use-marina-branding";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/hooks/use-sidebar";
 
@@ -74,6 +74,7 @@ function SidebarNav({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?
 
 export function CustomerSidebar() {
   const { collapsed, toggle, mobileOpen, setMobileOpen } = useSidebar();
+  const { name: marinaName } = useMarinaBranding();
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
@@ -86,7 +87,7 @@ export function CustomerSidebar() {
         {!collapsed && (
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-primary-foreground">Customer Portal</p>
-            <p className="truncate text-xs text-primary-foreground/60">{marinaConfig.name}</p>
+            <p className="truncate text-xs text-primary-foreground/60">{marinaName}</p>
           </div>
         )}
         <Button
@@ -130,7 +131,7 @@ export function CustomerSidebar() {
           <div className="flex h-full flex-col pt-2">
             <div className="px-4 pb-2">
               <p className="text-sm font-semibold">Customer Portal</p>
-              <p className="text-xs text-primary-foreground/60">{marinaConfig.name}</p>
+              <p className="text-xs text-primary-foreground/60">{marinaName}</p>
             </div>
             <SidebarNav collapsed={false} onNavigate={() => setMobileOpen(false)} />
           </div>

@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { apiFetch, apiUpload } from "@/lib/api";
-import { marinaConfig } from "@/lib/marina";
+import { useMarinaBranding } from "@/hooks/use-marina-branding";
 import type { LandingGalleryImage, LandingGalleryManageResponse } from "@/types";
 
 function normalizeManageResponse(
@@ -40,9 +40,10 @@ function normalizeManageResponse(
 }
 
 export default function LandingGalleryPage() {
+  const { name, subtitle } = useMarinaBranding();
   const [rows, setRows] = useState<LandingGalleryImage[]>([]);
-  const [heroLabel, setHeroLabel] = useState(marinaConfig.name);
-  const [heroTitle, setHeroTitle] = useState(marinaConfig.subtitle);
+  const [heroLabel, setHeroLabel] = useState(name);
+  const [heroTitle, setHeroTitle] = useState(subtitle);
   const [savingHero, setSavingHero] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
