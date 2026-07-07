@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Anchor, LogOut, Menu } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { useState } from "react";
+
+import { MarinaLogo } from "@/components/branding/MarinaLogo";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ export type NavItem = { href: string; label: string };
 interface SiteHeaderProps {
   title?: string;
   subtitle?: string;
+  logoImage?: boolean;
   items?: NavItem[];
   cta?: { href: string; label: string };
   variant?: "light" | "dark";
@@ -59,7 +62,7 @@ function NavLinks({
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "relative text-sm font-medium transition-colors duration-200",
+              "relative text-base font-bold transition-colors duration-200",
               dark
                 ? active
                   ? "text-white after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-marina-teal"
@@ -80,6 +83,7 @@ function NavLinks({
 export function SiteHeader({
   title = marinaConfig.name,
   subtitle,
+  logoImage = false,
   items = DEFAULT_NAV,
   cta = { href: "/requests/new?form_type=GENERAL", label: "Start work order →" },
   variant = "light",
@@ -99,32 +103,33 @@ export function SiteHeader({
           : "border-border/50 bg-background/85"
       )}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
-        <Link href="/" className="group flex min-w-0 items-center gap-3">
-          <span
-            className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
-              dark ? "bg-white/10 text-white" : "bg-primary/8 text-primary group-hover:bg-primary/12"
-            )}
-          >
-            <Anchor className="h-4 w-4" aria-hidden />
-          </span>
-          <div className="min-w-0">
-            <p
-              className={cn(
-                "truncate text-sm font-semibold tracking-tight sm:text-base",
-                dark ? "text-white" : "text-foreground"
-              )}
-            >
-              {title}
-            </p>
-            {subtitle && (
-              <p className={cn("hidden truncate text-xs sm:block", dark ? "text-white/60" : "text-muted-foreground")}>
-                {subtitle}
+      <div className={cn("mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8", logoImage ? "py-4 sm:py-5" : "py-4")}>
+        {logoImage ? (
+          <MarinaLogo priority />
+        ) : (
+          <Link href="/" className="group flex min-w-0 items-center gap-3">
+            <div className="min-w-0">
+              <p
+                className={cn(
+                  "truncate text-sm font-semibold tracking-tight sm:text-base",
+                  dark ? "text-white" : "text-foreground"
+                )}
+              >
+                {title}
               </p>
-            )}
-          </div>
-        </Link>
+              {subtitle && (
+                <p
+                  className={cn(
+                    "hidden truncate text-xs sm:block",
+                    dark ? "text-white/60" : "text-muted-foreground"
+                  )}
+                >
+                  {subtitle}
+                </p>
+              )}
+            </div>
+          </Link>
+        )}
 
         <nav className="hidden items-center gap-8 md:flex">
           <NavLinks items={items} pathname={pathname} dark={dark} />
@@ -132,7 +137,7 @@ export function SiteHeader({
             <Link
               href={cta.href}
               className={cn(
-                "text-sm font-semibold transition-colors",
+                "text-base font-bold transition-colors",
                 dark ? "text-marina-teal hover:text-white" : "text-accent hover:text-primary"
               )}
             >
@@ -193,7 +198,7 @@ export function SiteHeader({
                 <Link
                   href={cta.href}
                   onClick={() => setOpen(false)}
-                  className="text-sm font-semibold text-accent"
+                  className="text-base font-bold text-accent"
                 >
                   {cta.label}
                 </Link>

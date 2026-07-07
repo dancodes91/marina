@@ -58,6 +58,7 @@ export function MarketingHeader({
 
   return (
     <SiteHeader
+      logoImage
       title={headerTitle}
       subtitle={headerSubtitle}
       items={items}
